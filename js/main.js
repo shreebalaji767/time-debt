@@ -73,8 +73,10 @@
     if(p.grounded&&p.jumpLock<=0){
       const under=previewPlatforms.find(pl=>p.x+p.playerW>pl.x+12&&p.x<pl.x+pl.w-12&&Math.abs(p.y+p.playerH-pl.y)<2);
       const ahead=previewPlatforms.find(pl=>pl.x>p.x+p.playerW&&pl.x-p.x<145&&pl.y<p.y+p.playerH+12);
-      const gap=under&&(!previewPlatforms.some(pl=>pl.x<=under.x+under.w+95&&pl.x+pl.w>under.x+under.w+10&&pl.y>=under.y-35));
-      if(gap||ahead){p.vy=-590;p.grounded=false;p.jumpLock=.58;}
+      const nextFloor=under&&previewPlatforms.find(pl=>pl.x>=under.x+under.w-2&&pl.x<under.x+under.w+150&&pl.y>=under.y-35);
+      const gap=under&&(!nextFloor||nextFloor.x>under.x+under.w+10);
+      const nearEdge=under&&p.x+p.playerW>under.x+under.w-105;
+      if((gap&&nearEdge)||ahead){p.vy=-590;p.grounded=false;p.jumpLock=.58;}
     }
     // Collect the same shards and activate the same gates used by the real level.
     for(const s of previewShards)if(!s.got&&p.x+p.playerW>s.x-10&&p.x<s.x+10&&p.y+p.playerH>s.y-10&&p.y<s.y+10){s.got=true;p.shards++;}

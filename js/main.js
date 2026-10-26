@@ -294,7 +294,8 @@
     const wasGrounded=player.ground;
     player.vy+=difficulty.gravity*dt;player.y+=player.vy*dt;player.ground=false;
     for(const p of platforms){
-      if(player.x+player.w>p.x&&player.x<p.x+p.w&&prevY+player.h<=p.y+5&&player.y+player.h>=p.y&&player.vy>=0){
+      // Sweep from the previous frame bottom to the current bottom to catch thin ledges reliably.
+      if(player.x+player.w>p.x&&player.x<p.x+p.w&&prevY+player.h<=p.y+4&&player.y+player.h>=p.y&&player.vy>=0){
         player.y=p.y-player.h;player.vy=0;player.ground=true;
       }
     }

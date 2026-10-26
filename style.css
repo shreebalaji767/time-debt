@@ -7,9 +7,9 @@ button{font:inherit}
 .app-shell{max-width:1500px;margin:0 auto;padding:0 clamp(16px,4vw,58px)}
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a2432}
 .brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
-.brand-mark{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--cyan);color:var(--cyan);font-size:17px;font-weight:900;transform:rotate(-6deg)}
-.brand-mark span{color:var(--amber)}
-.brand-name{font-size:13px;font-weight:900;letter-spacing:.18em}.brand-name span{color:var(--cyan);margin-left:5px}
+.brand-mark{display:block;width:40px;height:40px;flex:0 0 40px;object-fit:contain;filter:drop-shadow(0 0 10px #5de7f422);transition:filter .2s,transform .2s}
+.brand:hover .brand-mark{filter:drop-shadow(0 0 13px #5de7f466);transform:rotate(-4deg) scale(1.04)}
+.brand-name{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:900;letter-spacing:.18em;line-height:1.05}.brand-name span{color:var(--cyan);margin-left:5px}.brand-name small{font-size:7px;font-weight:600;letter-spacing:.2em;color:#6d849b}
 .top-status{display:flex;align-items:center;gap:10px;color:#8092a9;font-size:10px;letter-spacing:.14em}
 .live-dot{display:inline-block;width:6px;height:6px;background:var(--cyan);border-radius:50%;box-shadow:0 0 10px #5de7f4aa}
 .icon-btn{border:1px solid var(--line);background:#0d131e;color:var(--cyan);padding:9px 12px;cursor:pointer}
@@ -544,3 +544,12 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .chat-compose{display:flex;align-items:center;gap:9px;padding:10px 12px;border-top:1px solid #ffffff12;background:#0b141e;color:#627a8e;font-size:7px;letter-spacing:.1em}
 .chat-send{margin-left:auto;color:#5de7f4}
 @media(max-width:520px){.chat-thread{max-height:220px;padding:10px;gap:8px}.chat-message{max-width:94%;font-size:9px;padding:8px 9px}.chat-message p{font-size:9px}.chat-header{padding:10px}.chat-lock{font-size:6px}}
+
+
+/* Brand system refresh — one source of truth for the header mark and favicon */
+.brand{gap:10px;min-width:0}
+.brand:focus-visible{outline:2px solid var(--cyan);outline-offset:5px;border-radius:2px}
+.brand-name{white-space:nowrap;text-shadow:0 0 18px #5de7f40b}
+.brand-name small{padding-left:1px}
+@media(max-width:560px){.brand-mark{width:36px;height:36px;flex-basis:36px}.brand-name{font-size:11px}.brand-name small{font-size:6px;letter-spacing:.16em}}
+@media(prefers-reduced-motion:reduce){.brand-mark{transition:none}.brand:hover .brand-mark{transform:none}}

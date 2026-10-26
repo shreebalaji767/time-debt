@@ -104,3 +104,9 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Each chapter finale now has its own named boss, color identity, taunt, and attack pattern: aimed shots, spread volleys, falling projectiles, twin shots, radial bursts, and sweeping volleys.
 - Boss durability scales by chapter. At half health, bosses enter an enraged phase with faster or denser attacks; Phase Dash deals bonus damage during this phase.
 - Boss health bars and projectile colors match the active boss. The campaign remains a continuous 100-mission story.
+
+
+## Version 2.8.0 — Signature Boss Mechanics
+- Chapter bosses now have signature abilities: memory-wipe projectile clears, floor-wide ash waves, gravity flips, teleport blinks, mirror strikes, storm sweeps, and timed energy shields.
+- Shielded bosses reject Phase Dash strikes until their shield opens. A visible cyan shield ring and HUD hint communicate the state.
+- These mechanics build on each boss’s existing projectile pattern and enraged phase.

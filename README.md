@@ -110,3 +110,9 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Chapter bosses now have signature abilities: memory-wipe projectile clears, floor-wide ash waves, gravity flips, teleport blinks, mirror strikes, storm sweeps, and timed energy shields.
 - Shielded bosses reject Phase Dash strikes until their shield opens. A visible cyan shield ring and HUD hint communicate the state.
 - These mechanics build on each boss’s existing projectile pattern and enraged phase.
+
+
+## Version 2.9.0 — Persistent Chrono Skill Tree
+- Added four permanent upgrades purchased with collected Chrono Shards: Time Reserve, Kinetic Drive, Phase Coil, and Debt Armor.
+- Each upgrade has three ranks; costs increase by rank, and shard spending and skill ranks persist in browser local storage.
+- Upgrades affect mission time, jump power, dash cooldown, and time penalties from hits.

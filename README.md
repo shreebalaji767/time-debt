@@ -91,3 +91,10 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Added a quick phase-dash burst on **X** with a 1.15-second cooldown and a short invulnerability window to help evade hazards.
 - Added dash trail effects, sound and status feedback, touch-screen dash button, and a field-manual entry.
 - Dash state resets cleanly when a mission is reset. The 100-mission continuous campaign and existing progress saves are preserved.
+
+
+## Version 2.6.0 — Chapter Boss Battles
+- Added a unique-feeling Collector boss encounter at the end of each 10-mission chapter (missions 10, 20, ... 100).
+- Bosses guard the exit, fire aimed temporal pulses, and show a live core-health bar.
+- Use Phase Dash (**X**) through the boss core to deal damage; each strike briefly exposes the runner to risk, so time the approach between projectiles.
+- Defeating the core clears its projectiles and grants four seconds back. All existing mission progression and local saves remain intact.

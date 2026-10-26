@@ -71,3 +71,9 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Falling after a checkpoint costs five seconds instead of immediately ending the run.
 - Updated the world preview to better match the playable game's movement and time-borrowing behavior.
 - Kept all visuals procedural and all gameplay dependencies browser-native.
+
+### World-story messenger upgrade
+- Expanded all 10 chapter conversations into scrollable world dossiers inside the in-game message box.
+- Each chapter now explains its world's history, rules and time mechanics, allies, threats, hidden truth, and chapter objective.
+- All 100 missions show their own mission title, mission-specific story beat, and chapter goal in the message thread.
+- Lore text is inserted as text content rather than interpreted as HTML; responsive scrolling supports desktop and mobile.

@@ -307,14 +307,14 @@
     ];
     // Each mission reshapes the route deterministically; the chapter story stays continuous.
     platforms.forEach((p,i)=>{
-      if(i>=3&&i<=13){p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(34,8+levelIndex*.22),300,480);p.w=Math.max(82,p.w-(levelIndex%7)*3);}
+      if((i>=3&&i<=11||i===13||i===14)){p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(34,8+levelIndex*.22),300,480);p.w=Math.max(82,p.w-(levelIndex%7)*3);}
     });
     hazards.forEach((h,i)=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.homeY=h.y;h.phase+=levelIndex*.19;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;if(gameplayMode===5){h.verticalRange=34+(i%3)*12;h.homeY=h.y;}});
     const extraByLevel=Math.min(6,levelIndex+(difficulty.extra||0));
     const extraSpawns=[{x:475,y:488,w:28,h:22,range:55,speed:1.7,phase:.8},{x:990,y:330,w:22,h:32,range:75,speed:1.9,phase:2.1},{x:1370,y:360,w:30,h:20,range:90,speed:2.1,phase:1.1},{x:1960,y:330,w:22,h:32,range:72,speed:2.2,phase:2.7},{x:2460,y:355,w:30,h:20,range:88,speed:2.3,phase:1.9},{x:2850,y:405,w:26,h:28,range:64,speed:2.4,phase:.3}];
     for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x,homeY:extraSpawns[i].y};if(gameplayMode===5)h.verticalRange=42;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
     if(gameplayMode===9){const h={x:2785,y:388,w:38,h:38,base:2810,range:112,speed:2.6+levelIndex*.008,phase:levelIndex*.7,direction:1,alert:0,lastX:2785,homeY:388,verticalRange:22,elite:true};hazards.push(h);}
-    platforms.forEach((p,i)=>{if(gameplayMode===3&&i>=3&&i<=13){p.moving=true;p.baseY=p.y;p.moveAmp=20+(i%3)*7;p.moveSpeed=.7+(i%4)*.13;}if(gameplayMode===4&&i>=3&&i<=13){p.fragile=true;p.collapse=0;}});
+    platforms.forEach((p,i)=>{if(gameplayMode===3&&(i>=3&&i<=11||i===13||i===14)){p.moving=true;p.baseY=p.y;p.moveAmp=20+(i%3)*7;p.moveSpeed=.7+(i%4)*.13;}if(gameplayMode===4&&(i>=3&&i<=11||i===13||i===14)){p.fragile=true;p.collapse=0;}});
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];
     shards=[{x:390,y:382,got:false},{x:640,y:304,got:false},{x:875,y:390,got:false},{x:1195,y:390,got:false},{x:1550,y:288,got:false},{x:1840,y:382,got:false},{x:2415,y:350,got:false},{x:2665,y:280,got:false}];
     motes=Array.from({length:110},()=>({x:rand(0,3100),y:rand(25,520),r:rand(.5,2),p:rand(0,6.28),s:rand(.15,.8)}));

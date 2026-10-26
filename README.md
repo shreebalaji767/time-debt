@@ -98,3 +98,9 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Bosses guard the exit, fire aimed temporal pulses, and show a live core-health bar.
 - Use Phase Dash (**X**) through the boss core to deal damage; each strike briefly exposes the runner to risk, so time the approach between projectiles.
 - Defeating the core clears its projectiles and grants four seconds back. All existing mission progression and local saves remain intact.
+
+
+## Version 2.7.0 — Ten Chapter Bosses
+- Each chapter finale now has its own named boss, color identity, taunt, and attack pattern: aimed shots, spread volleys, falling projectiles, twin shots, radial bursts, and sweeping volleys.
+- Boss durability scales by chapter. At half health, bosses enter an enraged phase with faster or denser attacks; Phase Dash deals bonus damage during this phase.
+- Boss health bars and projectile colors match the active boss. The campaign remains a continuous 100-mission story.

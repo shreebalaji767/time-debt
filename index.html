@@ -28,13 +28,8 @@
         <div class="landing-preview" aria-label="Animated preview of the TIME DEBT game world">
           <div class="preview-top"><span><i class="live-dot"></i> LIVE WORLD PREVIEW</span><span>SIMULATION 00:45</span></div>
           <div class="preview-world" aria-hidden="true">
-            <div class="preview-sun"></div><div class="preview-orbit orbit-one"></div><div class="preview-orbit orbit-two"></div>
-            <div class="preview-stars"></div>
-            <div class="preview-platform platform-one"></div><div class="preview-platform platform-two"></div><div class="preview-platform platform-three"></div>
-            <div class="preview-gate"><span></span></div><div class="preview-hazard"></div>
-            <div class="preview-player"><i></i></div>
-            <div class="preview-shard shard-one">✦</div><div class="preview-shard shard-two">✦</div>
-            <div class="preview-scanline"></div>
+            <canvas id="worldPreviewCanvas" class="world-preview-canvas" width="960" height="220"></canvas>
+            <div class="preview-live-readout"><span>WORLD STREAM <b>● LIVE</b></span><span id="previewFlow">FLOW 1.0×</span></div>
           </div>
           <div class="preview-bottom"><span>SECTOR 01 <b>·</b> THE BREACH</span><span><i></i> TEMPORAL FIELD ACTIVE</span></div>
         </div>

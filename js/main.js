@@ -4,14 +4,14 @@
   const ctx = canvas.getContext("2d", { alpha: false });
   const $ = id => document.getElementById(id);
   const ui = {
-    start: $("startScreen"), end: $("endScreen"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
+    start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), pauseBtn: $("pauseBtn"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
     time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
     best: $("bestValue"), gates: $("gateValue"), paid: $("paidValue"), level: $("levelLabel"),
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
   };
   const W = 960, H = 600, FLOOR = 526, TOTAL = 45;
-  let dpr = 1, running = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
+  let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let player, platforms, hazards, motes, gates, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
@@ -47,7 +47,7 @@
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1500);
   }
   function reset(){
-    elapsed=0; debt=0; paid=0; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false;
+    elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false;
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
       {x:0,y:FLOOR,w:430,h:74},{x:492,y:FLOOR,w:210,h:74},{x:772,y:FLOOR,w:270,h:74},
@@ -74,16 +74,16 @@
     ui.debt.innerHTML='0.0<span>s</span>'; ui.debtMeter.style.width="0%";
     ui.paid.innerHTML='0.0<span>s</span>'; ui.world.textContent="WORLD FLOW: 1.0×";
     ui.run.textContent="AWAITING INPUT"; ui.level.textContent="SECTOR 01 / THE BREACH";
-    ui.start.classList.remove("hidden"); ui.end.classList.add("hidden");
+    ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
     draw();
   }
   function start(){
     if(running)return;
-    reset(); running=true; ui.start.classList.add("hidden"); ui.run.textContent="TIMELINE ACTIVE";
+    reset(); running=true; paused=false; ui.start.classList.add("hidden"); ui.run.textContent="TIMELINE ACTIVE";
     last=performance.now(); tone(520,.12,"triangle"); requestAnimationFrame(loop);
   }
-  function finish(win,reason){
+  function setPaused(value){\n    if(!running||ended)return;\n    paused=Boolean(value);ui.pause.classList.toggle("hidden",!paused);ui.pauseBtn.innerHTML=paused?"▶ <span>RESUME</span>":"Ⅱ <span>PAUSE</span>";\n    ui.run.textContent=paused?"TIMELINE PAUSED":"TIMELINE ACTIVE";\n    if(!paused){last=performance.now();requestAnimationFrame(loop);}\n  }\n  function finish(win,reason){
     if(ended)return; ended=true; running=false;
     ui.end.classList.remove("hidden");
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";
@@ -238,7 +238,7 @@
     if(code==="KeyR"&&ended)start();
   });
   window.addEventListener("keyup",e=>{keys[e.code]=false;});
-  window.addEventListener("blur",()=>{keys=Object.create(null);});
+  window.addEventListener("blur",()=>{keys=Object.create(null);if(running&&!ended)setPaused(true);});
   // Pointer/touch controls are intentionally integrated into the playfield.
   let touchX=null;
   canvas.addEventListener("pointerdown",e=>{
@@ -250,7 +250,7 @@
   });
   canvas.addEventListener("pointerup",e=>{if(touchX===e.pointerId){keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;}});
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
-  ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
+  ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);\n  ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));\n  document.querySelectorAll("[data-control]").forEach(button=>{\n    const control=button.dataset.control;\n    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="borrow")keys.KeyE=true;};\n    const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};\n    button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);\n  });
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";if(soundOn)tone(600,.08);});
   window.addEventListener("resize",resize);
   reset();resize();

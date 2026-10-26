@@ -27,3 +27,9 @@ Reach the cyan exit beacon while the 45-second reserve lasts. Borrowing freezes 
 The repository is a static site. In GitHub, open **Settings → Pages** and choose the `main` branch and `/(root)` as the publishing source. The site entry point is `index.html`. GitHub Pages can take several minutes to publish a new commit.
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
+
+## Version 1.1.0
+- Expanded live telemetry with per-run chrono shard collection and lifetime run counts.
+- Added persistent lifetime shard and run totals using LocalStorage.
+- Improved impact shake feedback, keyboard repeat handling, and touch/pointer event safety.
+- Kept all visuals procedural and all gameplay dependencies browser-native.

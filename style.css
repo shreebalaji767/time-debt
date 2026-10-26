@@ -491,3 +491,11 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .preview-live-readout b::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);margin-right:4px;box-shadow:0 0 7px var(--cyan)}
 .preview-world{background:#080d16}
 @media(prefers-reduced-motion:reduce){.world-preview-canvas{image-rendering:auto}}
+
+
+/* Difficulty selector */
+.difficulty-picker{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0 16px;color:#8297ad;font-size:9px;letter-spacing:.14em}
+.difficulty-picker select{max-width:100%;padding:9px 30px 9px 11px;border:1px solid #355063;border-radius:2px;background:#0c1723;color:var(--cyan);font:inherit;letter-spacing:.06em;cursor:pointer;outline-offset:3px}
+.difficulty-picker select:focus-visible{outline:2px solid var(--cyan)}
+.difficulty-picker option{background:#0c1723;color:#d5fbff}
+@media(max-width:560px){.difficulty-picker{font-size:8px;gap:7px}.difficulty-picker select{padding:8px 22px 8px 9px}}

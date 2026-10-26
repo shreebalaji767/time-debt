@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="TIME DEBT — a code-generated time-bending platform game.">
+  <title>TIME DEBT — Borrow tomorrow</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Time Debt home"><span class="brand-mark">T<span>+</span></span><span class="brand-name">TIME<span>DEBT</span></span></a>
+      <div class="top-status"><span class="live-dot"></span><span>TEMPORAL SYSTEM ONLINE</span></div>
+      <button id="soundBtn" class="icon-btn" aria-label="Toggle sound" title="Toggle sound">♫ <span id="soundState">ON</span></button>
+    </header>
+    <main>
+      <section class="intro">
+        <div class="eyebrow"><span>01</span> / TEMPORAL SURVIVAL PROTOCOL</div>
+        <h1>Borrow <em>tomorrow.</em><br>Survive today.</h1>
+        <p class="intro-copy">Time is your weapon. Every second borrowed must be repaid.</p>
+      </section>
+      <section class="game-layout" aria-label="Game">
+        <div class="game-frame">
+          <div class="frame-top"><span><i class="tiny-square"></i> LIVE SIMULATION</span><span id="levelLabel">SECTOR 01 / THE BREACH</span><span class="frame-coords">X <b id="coordX">000</b> · Y <b id="coordY">000</b></span></div>
+          <div class="canvas-wrap">
+            <canvas id="game" aria-label="TIME DEBT platform game. Move with A and D or arrow keys, jump with W or Space, hold E or Shift to borrow time."></canvas>
+            <div id="startScreen" class="overlay">
+              <div class="overlay-kicker">TEMPORAL ANOMALY DETECTED</div>
+              <div class="big-symbol">◉</div>
+              <h2>Break the loop.</h2>
+              <p>Reach the gate. Don't let the debt catch you.</p>
+              <button id="startBtn" class="primary-btn">INITIATE RUN <span>↗</span></button>
+              <div class="overlay-note">NO CHECKPOINTS IN THIS TIMELINE</div>
+            </div>
+            <div id="endScreen" class="overlay hidden">
+              <div class="overlay-kicker" id="endKicker">TIMELINE COLLAPSED</div>
+              <div class="big-symbol" id="endSymbol">×</div>
+              <h2 id="endTitle">Debt collected.</h2>
+              <p id="endCopy">The timeline has reset.</p>
+              <button id="retryBtn" class="primary-btn">RETRY TIMELINE <span>↻</span></button>
+            </div>
+            <div id="toast" class="toast" aria-live="polite"></div>
+            <div class="canvas-bottom"><span>SYS // TD-01</span><span id="worldStatus">WORLD FLOW: 1.0×</span><span>LATENCY: <b id="latency">16</b> MS</span></div>
+          </div>
+          <div class="game-footer"><span><i class="key-dot"></i> PROCEDURAL WORLD</span><span><i class="key-dot amber"></i> TEMPORAL DEBT ACTIVE</span><span id="runStatus">AWAITING INPUT</span></div>
+        </div>
+        <aside class="sidebar">
+          <div class="panel time-panel">
+            <div class="panel-heading"><span>TIME RESERVE</span><span class="panel-code">T-01</span></div>
+            <div class="time-value"><strong id="timeValue">45.0</strong><span>SEC</span></div>
+            <div class="meter"><div id="timeMeter" class="meter-fill cyan"></div></div>
+            <div class="meter-labels"><span>EMPTY</span><span>45 SEC</span></div>
+            <div class="debt-row"><span>OUTSTANDING DEBT</span><strong id="debtValue">0.0<span>s</span></strong></div>
+            <div class="meter debt-meter"><div id="debtMeter" class="meter-fill amber"></div></div>
+            <p class="panel-hint">Borrow time to freeze the world. The debt collector accelerates time when you release.</p>
+          </div>
+          <div class="panel controls-panel">
+            <div class="panel-heading"><span>FIELD MANUAL</span><span class="panel-code">OPS</span></div>
+            <div class="control-row"><kbd>A</kbd><kbd>D</kbd><span>MOVE</span><small>← →</small></div>
+            <div class="control-row"><kbd>W</kbd><span class="or">OR</span><kbd>SPACE</kbd><span>JUMP</span></div>
+            <div class="control-row"><kbd class="accent-key">E</kbd><span class="or">OR</span><kbd class="accent-key">SHIFT</kbd><span>BORROW TIME</span></div>
+            <div class="control-tip"><span>!</span><p>Hold the borrow key to freeze hazards. Every borrowed second adds debt. Release to repay at 2× speed.</p></div>
+          </div>
+          <div class="panel stats-panel">
+            <div class="panel-heading"><span>RUN TELEMETRY</span><span class="panel-code">LIVE</span></div>
+            <div class="stat-line"><span>BEST TIME</span><strong id="bestValue">—</strong></div>
+            <div class="stat-line"><span>GATES CLEARED</span><strong id="gateValue">0 <small>/ 3</small></strong></div>
+            <div class="stat-line"><span>DEBT PAID</span><strong id="paidValue">0.0<span>s</span></strong></div>
+          </div>
+        </aside>
+      </section>
+      <section class="bottom-strip">
+        <div><span class="strip-number">01</span><p><strong>Borrow</strong><br>Freeze hazards in their tracks.</p></div>
+        <div><span class="strip-number">02</span><p><strong>Repay</strong><br>The world speeds up. Stay sharp.</p></div>
+        <div><span class="strip-number">03</span><p><strong>Escape</strong><br>Reach the gate before time runs out.</p></div>
+        <div class="strip-note">YOUR FUTURE IS<br><em>ALREADY SPENT.</em></div>
+      </section>
+    </main>
+    <footer><span>TIME DEBT <b>©</b> 2089 TEMPORAL DIVISION</span><span>BUILT FROM NOTHING. RUNNING ON TIME.</span><span>BUILD 1.0.0 <i class="live-dot"></i></span></footer>
+  </div>
+  <script src="./js/main.js"></script>
+</body>
+</html>

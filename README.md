@@ -28,6 +28,11 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
+## Version 2.1.0 — Reliability Polish
+- Restores the normal mission briefing after a startup recovery error, so a retry does not remain stuck in recovery mode.
+- Improves mission-completion feedback with the completed mission number/name, its story briefing, remaining time, and the next mission name.
+- Startup and completion text changes are code-only; no external assets or dependencies were added.
+
 ## Version 2.0.0 — Story Campaign
 - Expanded the campaign to 100 selectable missions across 10 narrative chapters.
 - Added mission-specific story text, chapter objectives, and local story progress tracking.

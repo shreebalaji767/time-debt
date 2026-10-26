@@ -316,7 +316,8 @@
       nextButton.textContent="NEXT MISSION "+String(Math.min(100,levelIndex+2)).padStart(3,"0")+" →";
       nextButton.setAttribute("aria-label","Start next mission "+String(Math.min(100,levelIndex+2)));
     }
-    const missionBest=Number(missionRecords[String(levelIndex)]||0);
+    const storedMissionBest=Number(missionRecords[String(levelIndex)]||0);
+    const missionBest=win?(!storedMissionBest||elapsed<storedMissionBest?elapsed:storedMissionBest):storedMissionBest;
     $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+runShards+"/8 chrono-shards collected. Mission best: "+(missionBest?missionBest.toFixed(2)+"s":"—")+". "+(levelIndex>=99?"You have completed all 100 missions.":"Next mission unlocked: "+String(levelIndex+2).padStart(3,"0")+" · "+LEVELS[levelIndex+1].name+".")):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);

@@ -77,3 +77,11 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Each chapter now explains its world's history, rules and time mechanics, allies, threats, hidden truth, and chapter objective.
 - All 100 missions show their own mission title, mission-specific story beat, and chapter goal in the message thread.
 - Lore text is inserted as text content rather than interpreted as HTML; responsive scrolling supports desktop and mobile.
+
+
+## Version 2.4.0 — 100 distinct mission variants
+- All 100 levels remain part of one continuous ten-chapter story; mission dialogue continues to reveal the same overarching mystery in sequence.
+- Every level has its own deterministic platform-route variation and rising hazard pressure.
+- Ten distinct gameplay variants run through each chapter: precision running, low gravity, heavy gravity, moving platforms, collapsing ledges, vertical sentinels, crosswind, blackout visibility, control inversion/time surges, and an elite collector encounter.
+- The selected mission's gameplay rules are announced in the message-box briefing and HUD.
+- The game remains a dependency-free static HTML/CSS/JavaScript project with local progress saves.

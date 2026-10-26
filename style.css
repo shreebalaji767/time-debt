@@ -576,3 +576,8 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 /* Mission-specific gameplay briefing */
 #levelLabel{max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .messenger .chat-message:first-of-type{border-left:2px solid #ffb454;background:#182333}
+
+
+/* Phase dash touch control */
+.touch-controls [data-control="dash"]{color:#ffcf80;border-color:#805d2b;background:#2b2118}
+.touch-controls [data-control="dash"].is-active{background:#6b4820;box-shadow:0 0 18px #ffb45455}

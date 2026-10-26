@@ -6,7 +6,7 @@
   const ui = {
     start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), logoLink: $("logoLink"), pauseBtn: $("pauseBtn"), exitBtn: $("exitBtn"), landingPlayBtn: $("landingPlayBtn"), gameLayout: $("gameLayout"), landingIntro: $("landingIntro"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
     time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
-    best: $("bestValue"), gates: $("gateValue"), paid: $("paidValue"), level: $("levelLabel"),
+    best: $("bestValue"), gates: $("gateValue"), shards: $("shardValue"), runs: $("runsValue"), paid: $("paidValue"), level: $("levelLabel"),
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
   };
@@ -16,6 +16,11 @@
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
+  let totalShards = Number(localStorage.getItem("td-shards") || 0);
+  let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
+  let runShards = 0;
+  ui.shards.textContent = "0 / 8";
+  ui.runs.textContent = String(runsPlayed);
   ui.best.textContent = best ? best.toFixed(1) + "s" : "—";
   ui.gates.innerHTML = Math.min(unlocked, 3) + " <small>/ 3</small>";
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
@@ -47,7 +52,8 @@
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1500);
   }
   function reset(){
-    elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false;
+    elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
+    ui.shards.innerHTML="0 <small>/ 8</small>";
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
       {x:0,y:FLOOR,w:430,h:74},{x:492,y:FLOOR,w:210,h:74},{x:772,y:FLOOR,w:270,h:74},
@@ -113,6 +119,7 @@
     $("endTitle").textContent=win?"You escaped time.":"Debt collected.";
     $("endCopy").textContent=win?("Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. The future is yours."):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
+    runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
       unlocked=Math.max(unlocked,3);localStorage.setItem("td-gates",String(unlocked));ui.gates.innerHTML="3 <small>/ 3</small>";
@@ -164,7 +171,9 @@
     }
     shards.forEach(s=>{
       if(!s.got && player.x+player.w>s.x-10 && player.x<s.x+10 && player.y+player.h>s.y-10 && player.y<s.y+10){
-        s.got=true; elapsed=Math.max(0,elapsed-2.5); say("CHRONO SHARD // +2.5 SEC"); tone(820,.12,"triangle");
+        s.got=true; runShards+=1; totalShards+=1; localStorage.setItem("td-shards",String(totalShards));
+        ui.shards.innerHTML=runShards+" <small>/ 8</small>";
+        elapsed=Math.max(0,elapsed-2.5); say("CHRONO SHARD // +2.5 SEC"); tone(820,.12,"triangle");
       }
     });
     gates.forEach((g,i)=>{
@@ -185,6 +194,7 @@
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
   function draw(){
     ctx.save();ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+    if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
     ctx.fillStyle="#080d16";ctx.fillRect(0,0,W,H);
     const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#0b1524");bg.addColorStop(1,"#080d16");ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
     // Procedural star field and parallax grid.
@@ -264,15 +274,15 @@
     keys[code]=true;
     if((code==="Space"||code==="ArrowUp"||code==="KeyW")&&!e.repeat)jump();
     if(code==="Enter"&&!running&&!ui.gameLayout.classList.contains("is-hidden"))start();
-    if((code==="KeyP"||code==="Escape")&&running&&!ended){setPaused(!paused);return;}
-    if(code==="KeyR"&&ended)start();
+    if((code==="KeyP"||code==="Escape")&&!e.repeat&&running&&!ended){setPaused(!paused);return;}
+    if(code==="KeyR"&&!e.repeat&&ended)start();
   });
   window.addEventListener("keyup",e=>{keys[e.code]=false;});
-  window.addEventListener("blur",()=>{keys=Object.create(null);if(running&&!ended)setPaused(true);});
+  window.addEventListener("blur",()=>{keys=Object.create(null);document.querySelectorAll("[data-control]").forEach(b=>b.classList.remove("is-active"));if(running&&!ended)setPaused(true);});
   // Pointer/touch controls are intentionally integrated into the playfield.
   let touchX=null;
   canvas.addEventListener("pointerdown",e=>{
-    if(!running)return;
+    if(!running||e.target.closest(".touch-controls"))return;
     canvas.setPointerCapture?.(e.pointerId);
     const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
     if(x<.3)keys.ArrowLeft=true;else if(x<.62)keys.ArrowRight=true;else jump();

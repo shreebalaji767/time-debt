@@ -10,48 +10,109 @@
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
   };
-  // Independent live preview: a lightweight procedural slice of the game world.
+  // Standalone gameplay preview using the actual level geometry and movement rules.
+  // This simulation is isolated from the playable run below.
   const previewCanvas = $("worldPreviewCanvas");
   const previewCtx = previewCanvas ? previewCanvas.getContext("2d") : null;
   const previewFlow = $("previewFlow");
-  let previewFrame = 0;
-  function drawWorldPreview(now){
-    if(!previewCanvas || !previewCtx) return;
-    const c=previewCtx,w=previewCanvas.width,h=previewCanvas.height,t=now/1000;
-    c.clearRect(0,0,w,h);
-    const bg=c.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#091321");bg.addColorStop(1,"#071018");c.fillStyle=bg;c.fillRect(0,0,w,h);
-    // Distant orbital glow and a slow-moving celestial ring.
-    const glow=c.createRadialGradient(w*.62,h*.35,2,w*.62,h*.35,125);glow.addColorStop(0,"#174b5a55");glow.addColorStop(1,"#07101800");c.fillStyle=glow;c.fillRect(0,0,w,h);
-    c.save();c.translate(w*.62,h*.35);c.rotate(t*.12);c.strokeStyle="#5de7f433";c.lineWidth=1;
-    c.beginPath();c.ellipse(0,0,72,19,-.2,0,Math.PI*2);c.stroke();c.beginPath();c.ellipse(0,0,94,27,-.2,0,Math.PI*2);c.stroke();
-    c.beginPath();c.arc(0,0,22,0,Math.PI*2);c.stroke();c.restore();
-    for(let i=0;i<85;i++){const x=mod(i*127.7-t*10,w),y=mod(i*41.3,h);c.globalAlpha=.2+(Math.sin(t*1.4+i)*.15+.15);c.fillStyle=i%6===0?"#ffb454":"#9aeaf2";c.fillRect(x,y,i%8===0?2:1,1);}
-    c.globalAlpha=1;
-    // Grid and skyline drift independently from the main game loop.
-    c.strokeStyle="#183044";c.lineWidth=1;
-    for(let x=-mod(t*13,36);x<w;x+=36){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
-    for(let y=22;y<h;y+=22){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
-    for(let i=0;i<22;i++){const x=mod(i*61-t*7,w+60)-30,bh=18+mod(i*23,46);c.fillStyle="#0a1421";c.fillRect(x,h-30-bh,20+mod(i*11,26),bh);c.fillStyle="#1b3948";c.fillRect(x,h-30-bh,20+mod(i*11,26),1);}
-    // Moving platforms, hazard sentinels, and chrono shards.
-    const offset=(t*37)%w;
-    const plats=[{x:45,y:h-44,w:175},{x:275,y:h-78,w:115},{x:440,y:h-52,w:150},{x:660,y:h-88,w:110},{x:820,y:h-43,w:125}];
-    c.save();c.translate(-offset*.32,0);
-    for(let k=-1;k<2;k++)for(const p of plats){const x=p.x+k*w;c.fillStyle="#122638";c.fillRect(x,p.y,p.w,22);c.fillStyle="#5de7f4";c.shadowBlur=10;c.shadowColor="#5de7f4";c.fillRect(x,p.y,p.w,2);c.shadowBlur=0;c.fillStyle="#203d50";c.fillRect(x+8,p.y+8,p.w-16,1);}
-    c.restore();
-    const hazardX=mod(t*48,w-40)+20,hazardY=h-57+Math.sin(t*2.4)*10;
-    c.save();c.translate(hazardX,hazardY);c.rotate(t*1.3);c.shadowBlur=14;c.shadowColor="#ff5d70";c.fillStyle="#ff5d70";c.fillRect(-7,-7,14,14);c.shadowBlur=0;c.fillStyle="#24131d";c.fillRect(-3,-3,6,6);c.restore();
-    for(let i=0;i<3;i++){const sx=mod(150+i*290-t*18,w),sy=h-95+Math.sin(t*2+i)*7;c.save();c.translate(sx,sy);c.rotate(t+i);c.shadowBlur=13;c.shadowColor="#5de7f4";c.fillStyle="#c9fbff";c.beginPath();c.moveTo(0,-6);c.lineTo(5,0);c.lineTo(0,6);c.lineTo(-5,0);c.closePath();c.fill();c.restore();}
-    // Player hops between platforms in a seamless looping preview.
-    const px=mod(t*54,w-40)+12,phase=(t*1.6)%1,py=h-54-Math.sin(phase*Math.PI)*28;
-    c.fillStyle="#5de7f444";c.fillRect(px-5,py+20,20,3);
-    c.shadowBlur=14;c.shadowColor="#5de7f4";c.fillStyle="#d5fbff";c.fillRect(px,py,11,20);c.shadowBlur=0;c.fillStyle="#0b1826";c.fillRect(px+6,py+4,3,3);c.fillStyle="#5de7f4";c.fillRect(px+2,py+16,7,2);
-    // Exit gate pulses at the far edge.
-    const gx=w-35,gy=h-68,pulse=1+Math.sin(t*3)*.08;c.save();c.translate(gx,gy);c.scale(pulse,pulse);c.strokeStyle="#5de7f4";c.lineWidth=2;c.shadowBlur=13;c.shadowColor="#5de7f4";c.strokeRect(-9,-20,18,25);c.beginPath();c.arc(0,-8,5,0,Math.PI*2);c.stroke();c.restore();
-    c.fillStyle="#5de7f4";c.fillRect(0,h-2,w,2);
-    if(previewFlow)previewFlow.textContent="FLOW "+(1+Math.sin(t*.5)*.08).toFixed(1)+"×";
-    previewFrame=requestAnimationFrame(drawWorldPreview);
+  const previewSector = document.querySelector(".preview-bottom span:first-child");
+  const preview = {
+    time: 0, debt: 0, flow: 1, x: 68, y: 450, vx: 245, vy: 0,
+    grounded: false, jumpLock: 0, cam: 0, shards: 0, gates: 0,
+    playerW: 24, playerH: 34, paused: false
+  };
+  const previewPlatforms = [
+    {x:0,y:526,w:430,h:74},{x:492,y:526,w:210,h:74},{x:772,y:526,w:270,h:74},
+    {x:356,y:420,w:112,h:16},{x:548,y:342,w:105,h:16},{x:710,y:435,w:100,h:16},
+    {x:914,y:365,w:130,h:16},{x:1088,y:460,w:160,h:16},{x:1310,y:394,w:118,h:16},
+    {x:1505,y:326,w:110,h:16},{x:1690,y:435,w:170,h:16},{x:1900,y:365,w:130,h:16},
+    {x:2100,y:455,w:200,h:74},{x:2370,y:390,w:130,h:16},{x:2550,y:320,w:150,h:16},
+    {x:2780,y:450,w:340,h:74}
+  ];
+  const previewHazards = [
+    {x:270,y:508,w:32,h:18,base:270,range:85,speed:1.25,phase:0},
+    {x:605,y:286,w:22,h:34,base:605,range:65,speed:1.5,phase:1.2},
+    {x:843,y:506,w:30,h:20,base:843,range:78,speed:1.3,phase:2},
+    {x:1170,y:418,w:24,h:34,base:1170,range:58,speed:1.8,phase:.4},
+    {x:1440,y:350,w:25,h:30,base:1440,range:64,speed:1.5,phase:1.8},
+    {x:1800,y:392,w:32,h:20,base:1800,range:95,speed:1.7,phase:2.7},
+    {x:2225,y:506,w:34,h:20,base:2225,range:75,speed:1.6,phase:1.4},
+    {x:2620,y:278,w:25,h:30,base:2620,range:60,speed:1.7,phase:3}
+  ];
+  const previewShards = [
+    {x:390,y:382},{x:640,y:304},{x:875,y:390},{x:1195,y:390},
+    {x:1550,y:288},{x:1840,y:382},{x:2415,y:350},{x:2665,y:280}
+  ].map(s=>({...s,got:false}));
+  const previewGates = [{x:1010,y:456},{x:2020,y:456},{x:2930,y:380}].map(g=>({...g,hit:false}));
+  function previewReset(){
+    preview.time=0;preview.debt=0;preview.flow=1;preview.x=68;preview.y=450;preview.vy=0;
+    preview.grounded=false;preview.jumpLock=0;preview.cam=0;preview.shards=0;preview.gates=0;
+    previewShards.forEach(s=>s.got=false);previewGates.forEach(g=>g.hit=false);
   }
-  if(previewCtx) previewFrame=requestAnimationFrame(drawWorldPreview);
+  function updateWorldPreview(dt){
+    const p=preview;
+    p.time+=dt;
+    // Demonstrate the real borrow/repay cycle in short, readable intervals.
+    const phase=p.time%12;
+    const borrowing=phase>5.1&&phase<7.1;
+    if(borrowing){p.debt=Math.min(12,p.debt+dt*1.65);p.flow=.12;}
+    else if(p.debt>0){const paid=Math.min(p.debt,dt*2);p.debt-=paid;p.flow=2.05;}
+    else p.flow=1;
+    const worldDt=dt*p.flow;
+    for(const h of previewHazards)h.x=h.base+Math.sin(p.time*h.speed+h.phase)*h.range;
+    // A simple autopilot follows the same horizontal speed, gravity and jump impulse as the game.
+    p.x+=245*worldDt;
+    const oldY=p.y;p.vy+=1350*worldDt;p.y+=p.vy*worldDt;p.grounded=false;
+    for(const plat of previewPlatforms){
+      if(p.x+p.playerW>plat.x&&p.x<plat.x+plat.w&&oldY+p.playerH<=plat.y+5&&p.y+p.playerH>=plat.y&&p.vy>=0){
+        p.y=plat.y-p.playerH;p.vy=0;p.grounded=true;
+      }
+    }
+    // Jump when the next stretch of floor ends or a higher ledge is reachable.
+    p.jumpLock=Math.max(0,p.jumpLock-dt);
+    if(p.grounded&&p.jumpLock<=0){
+      const under=previewPlatforms.find(pl=>p.x+p.playerW>pl.x+12&&p.x<pl.x+pl.w-12&&Math.abs(p.y+p.playerH-pl.y)<2);
+      const ahead=previewPlatforms.find(pl=>pl.x>p.x+p.playerW&&pl.x-p.x<145&&pl.y<p.y+p.playerH+12);
+      const gap=under&&(!previewPlatforms.some(pl=>pl.x<=under.x+under.w+95&&pl.x+pl.w>under.x+under.w+10&&pl.y>=under.y-35));
+      if(gap||ahead){p.vy=-590;p.grounded=false;p.jumpLock=.58;}
+    }
+    // Collect the same shards and activate the same gates used by the real level.
+    for(const s of previewShards)if(!s.got&&p.x+p.playerW>s.x-10&&p.x<s.x+10&&p.y+p.playerH>s.y-10&&p.y<s.y+10){s.got=true;p.shards++;}
+    for(let i=0;i<previewGates.length;i++){const g=previewGates[i];if(!g.hit&&p.x+p.playerW>g.x&&p.x<g.x+28&&p.y+p.playerH>g.y-45&&p.y<g.y+48){g.hit=true;p.gates=Math.max(p.gates,i+1);}}
+    // Hazard contact knocks the preview character back, like the live game.
+    for(const h of previewHazards)if(p.x+p.playerW>h.x&&p.x<h.x+h.w&&p.y+p.playerH>h.y&&p.y<h.y+h.h){p.x=Math.max(0,p.x-7);p.vy=-230;}
+    if(p.y>680||p.x>3050)previewReset();
+    p.cam=clamp(p.x-520,0,2160);
+    if(previewFlow)previewFlow.textContent=borrowing?"BORROW 0.12×":p.debt>0?"REPAY 2.05×":"FLOW 1.00×";
+    if(previewSector)previewSector.textContent="SECTOR "+String(p.x<1000?1:p.x<2000?2:3).padStart(2,"0")+" · "+(p.x<1000?"THE BREACH":p.x<2000?"LOST FUTURE":"LAST CHANCE");
+  }
+  function drawWorldPreview(now){
+    if(!previewCanvas||!previewCtx)return;
+    if(!preview.last)preview.last=now;
+    const dt=Math.min((now-preview.last)/1000,.033);preview.last=now;
+    updateWorldPreview(dt);
+    const c=previewCtx,w=previewCanvas.width,h=previewCanvas.height,p=preview;
+    c.clearRect(0,0,w,h);
+    const bg=c.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#0b1524");bg.addColorStop(1,"#080d16");c.fillStyle=bg;c.fillRect(0,0,w,h);
+    // Parallax stars and the same 48-unit world grid as the real game.
+    for(let i=0;i<90;i++){const x=mod(i*137.3-p.cam*.12,w),y=mod(i*73.7,h);c.globalAlpha=.18+(Math.sin(p.time*.7+i)*.1+.1);c.fillStyle=i%5===0?"#ffb454":"#8bdce9";c.fillRect(x,y,i%7===0?2:1,1);}
+    c.globalAlpha=1;c.strokeStyle="#142235";c.lineWidth=1;
+    for(let x=-mod(p.cam*.35,48);x<w;x+=48){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+    for(let y=22;y<h;y+=22){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+    c.save();c.setTransform(.55,0,0,.35,-p.cam*.55,0);
+    // These are the game's actual platforms, gate positions, shards and patrol hazards.
+    for(const pl of previewPlatforms){c.fillStyle="#101d2b";c.fillRect(pl.x,pl.y,pl.w,pl.h);c.fillStyle="#5de7f4";c.fillRect(pl.x,pl.y,pl.w,3);c.fillStyle="#16283a";for(let xx=pl.x+10;xx<pl.x+pl.w;xx+=28)c.fillRect(xx,pl.y+8,1,pl.h-8);}
+    previewShards.forEach((s,i)=>{if(s.got)return;c.save();c.translate(s.x,s.y);c.rotate(p.time*.8+i);c.shadowBlur=18;c.shadowColor="#5de7f4";c.fillStyle="#c7fbff";c.beginPath();c.moveTo(0,-9);c.lineTo(7,0);c.lineTo(0,9);c.lineTo(-7,0);c.closePath();c.fill();c.restore();});
+    previewGates.forEach((g,i)=>{c.strokeStyle=g.hit?"#5de7f4":"#ffb454";c.lineWidth=3;c.globalAlpha=g.hit?.45:1;c.strokeRect(g.x,g.y-44,28,44);c.globalAlpha=1;c.fillStyle="#ffb454";c.font="18px monospace";c.fillText("G"+(i+1),g.x+3,g.y-50);});
+    previewHazards.forEach((h,i)=>{c.save();c.translate(h.x+h.w/2,h.y+h.h/2);const frozen=p.time%12>5.1&&p.time%12<7.1;c.fillStyle=frozen?"#5de7f4":"#ff5d70";c.shadowBlur=12;c.shadowColor=c.fillStyle;c.beginPath();c.moveTo(0,-h.h/2);c.lineTo(h.w/2,h.h/2);c.lineTo(-h.w/2,h.h/2);c.closePath();c.fill();c.restore();});
+    c.save();c.translate(p.x+p.playerW/2,p.y+p.playerH/2);const frozen=p.time%12>5.1&&p.time%12<7.1;c.shadowBlur=frozen?24:12;c.shadowColor="#5de7f4";c.fillStyle="#d5fbff";c.fillRect(-p.playerW/2,-p.playerH/2,p.playerW,p.playerH);c.shadowBlur=0;c.fillStyle="#0b1826";c.fillRect(1,-7,6,5);c.fillStyle="#5de7f4";c.fillRect(-p.playerW/2+3,p.playerH/2-5,p.playerW-6,3);c.restore();
+    // Exit portal, matching the main game's endpoint.
+    c.save();c.translate(2985,410);c.strokeStyle="#5de7f4";c.lineWidth=4;c.shadowBlur=24;c.shadowColor="#5de7f4";c.beginPath();c.arc(0,0,29,0,Math.PI*2);c.stroke();c.beginPath();c.arc(0,0,19,-Math.PI/2,Math.PI*1.5);c.stroke();c.restore();
+    c.restore();
+    c.fillStyle="#5de7f4";c.globalAlpha=.65;c.fillRect(0,h-2,w,2);c.globalAlpha=1;
+    preview.last=now;preview.frame=requestAnimationFrame(drawWorldPreview);
+  }
+  if(previewCtx)preview.frame=requestAnimationFrame(drawWorldPreview);
 
   const W = 960, H = 600, FLOOR = 526, TOTAL = 45;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;

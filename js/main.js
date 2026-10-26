@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const ui = {
     start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), logoLink: $("logoLink"), pauseBtn: $("pauseBtn"), exitBtn: $("exitBtn"), landingPlayBtn: $("landingPlayBtn"), gameLayout: $("gameLayout"), landingIntro: $("landingIntro"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
-    time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
+    difficulty: $("difficultySelect"), time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
     best: $("bestValue"), gates: $("gateValue"), shards: $("shardValue"), runs: $("runsValue"), paid: $("paidValue"), level: $("levelLabel"),
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
@@ -125,7 +125,12 @@
   }
   if(previewCtx)preview.frame=requestAnimationFrame(drawWorldPreview);
 
-  const W = 960, H = 600, FLOOR = 526, TOTAL = 45;
+  const W = 960, H = 600, FLOOR = 526, BASE_TOTAL = 45;
+  let TOTAL = BASE_TOTAL;
+  const DIFFICULTIES = {story:{label:"STORY",time:55,speed:.78,gravity:1220,jump:625,hazard:.72,penalty:1.5,hunt:0},standard:{label:"STANDARD",time:45,speed:1,gravity:1350,jump:590,hazard:1,penalty:2.5,hunt:.12},paradox:{label:"PARADOX",time:40,speed:1.08,gravity:1450,jump:605,hazard:1.42,penalty:3.5,hunt:.32}};
+  let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
+  if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
+  let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
@@ -168,6 +173,8 @@
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1500);
   }
   function reset(){
+    difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];TOTAL=difficulty.time;
+    jumpBuffer=0;coyoteTime=0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
@@ -190,7 +197,7 @@
       {x:2225,y:FLOOR-20,w:34,h:20,base:0,range:75,speed:1.6,phase:1.4},
       {x:2620,y:278,w:25,h:30,base:0,range:60,speed:1.7,phase:3}
     ];
-    hazards.forEach(h=>h.base=h.x);
+    hazards.forEach(h=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.speed*=difficulty.hazard;h.range*=difficulty.hazard>1?1.12:1;});
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];
     shards=[{x:390,y:382,got:false},{x:640,y:304,got:false},{x:875,y:390,got:false},{x:1195,y:390,got:false},{x:1550,y:288,got:false},{x:1840,y:382,got:false},{x:2415,y:350,got:false},{x:2665,y:280,got:false}];
     motes=Array.from({length:110},()=>({x:rand(0,3100),y:rand(25,520),r:rand(.5,2),p:rand(0,6.28),s:rand(.15,.8)}));

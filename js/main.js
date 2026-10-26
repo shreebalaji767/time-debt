@@ -207,7 +207,7 @@
     ui.pauseBtn.classList.remove("hidden"); ui.exitBtn.classList.remove("hidden");
     ui.landingIntro.classList.add("game-intro");
     // Stop the decorative autoplay simulation while the real game is active.
-    if(preview.frame)cancelAnimationFrame(preview.frame);
+    if(preview.frame){cancelAnimationFrame(preview.frame);preview.frame=null;}
     ui.gameLayout.scrollIntoView({behavior:"auto",block:"start"});
   }
   function exitGame(){

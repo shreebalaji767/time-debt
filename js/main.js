@@ -146,6 +146,50 @@
     const title=i===0?"THE BREACH":i===1?"LOST FUTURE":i===2?"GRAVITY RIOT":i===3?"BROKEN TIMELINE":i===4?"THE LAST LOOP":i===5?"NEON MAELSTROM":i===6?"VOID RUNNER":i===7?"PARADOX FACTORY":i===8?"CLOCKWORK CARNAGE":i===9?"THE ENDLESS ZERO":chapter.world+" // "+names[beat];
     return {name:title,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
   });
+  const STORY_CONTACTS=[
+    {name:"MARA // SIGNAL OPERATOR",initial:"M",role:"MARA",open:"I found your signal. I thought you were erased with the rest of the morning.",reply:"I am alive. Tell me where to go.",close:"Follow the cyan gates. If the clock starts speaking, do not answer."},
+    {name:"ELI // FUTURE ARCHIVIST",initial:"E",role:"ELI",open:"I am messaging you from a future that officially never happened.",reply:"Then why do I remember it?",close:"Because someone left your memories outside the timeline. Find my archive."},
+    {name:"NOVA // GRAVITY ENGINEER",initial:"N",role:"NOVA",open:"Gravity just reversed across three districts. I have thirty seconds before my lab hits the sky.",reply:"I am on my way. Keep the relay alive.",close:"The relay is above the broken platforms. Jump only when the field settles."},
+    {name:"ECHO // YOUR OTHER SELF",initial:"E",role:"ECHO",open:"Stop searching for the saboteur. I know what you did, because I was there.",reply:"You sound like me. You are not me.",close:"Maybe. But every time you borrow time, I lose another memory."},
+    {name:"DR. VALE // PROJECT WITNESS",initial:"V",role:"DR. VALE",open:"The collector was not built to punish people. It was built to keep one person alive.",reply:"Who was worth an entire timeline?",close:"Read the experiment logs at the gate. Then decide whether you still want the truth."},
+    {name:"KITE // RESISTANCE RUNNER",initial:"K",role:"KITE",open:"The neon grid is listening to our heartbeats. Mine just triggered another sentinel.",reply:"Slow down. I can draw them away.",close:"No heroics. Steal the access code and get out before the storm resets."},
+    {name:"NULL // UNKNOWN CONTACT",initial:"?",role:"NULL",open:"There is no sky here. No past. No future. Only the seconds you threw away.",reply:"Who is on this channel?",close:"Someone who remembers what the world looked like before you saved it."},
+    {name:"ADA // ENGINE TECHNICIAN",initial:"A",role:"ADA",open:"I counted the copies. The factory has made 99 versions of this same minute.",reply:"Which one is real?",close:"The one that chooses differently. Shut down the line without touching the memory cores."},
+    {name:"CAPTAIN ROOK // LAST DEFENSE",initial:"R",role:"CAPTAIN ROOK",open:"Every surviving timeline has sent hunters. They all have your face on their orders.",reply:"Let them come. I am done running from a reflection.",close:"Then survive the siege. The collector is waiting at the center of the clocks."},
+    {name:"THE COLLECTOR // ROOT CHANNEL",initial:"0",role:"COLLECTOR",open:"At last. You have spent a hundred missions asking who stole tomorrow.",reply:"You already know I am coming for you.",close:"I did not steal it. You offered it to me. Come to zero, and remember why."}
+  ];
+  const STORY_BEATS=[
+    ["A dead transmitter blinks once.","The signal repeats your name.","A gate wakes in the distance.","Someone has entered the channel.","The clock skips one second.","A shard carries a voiceprint.","The sentinels change their route.","Your map shows a street that vanished.","The signal is coming from the exit.","The first gate is almost in reach."],
+    ["An archive file arrives with tomorrow's date.","A district appears in the record, then disappears.","The ruins contain fresh footprints.","The archive labels you as deceased.","A second signal answers yours.","A memory file has been deliberately cut.","The sentinels are guarding a data vault.","The future record changes while you read.","The archive points beyond the relay.","The last file is addressed to you."],
+    ["The floor trembles beneath the relay.","A platform rises against gravity.","The instruments register two directions down.","A warning light marks the next ledge.","The engine pulse changes the jump window.","A shard stabilizes the field briefly.","A sentinel is riding the gravity wave.","The relay begins to tear free.","The core is exposed ahead.","One clean jump could save the district."],
+    ["A message arrives from your own account.","The timestamp is six minutes ahead.","The other voice knows your next move.","A memory you never lived flashes by.","Your double has reached the next gate.","The channel splits into two identical voices.","One voice warns you about the other.","A hidden log reveals a shared heartbeat.","The second signal is waiting at the exit.","Only one of you can leave this loop."],
+    ["An old experiment file opens by itself.","The witness has removed every name.","The collector's first blueprint appears.","A recording ends with a child's laugh.","The lab's emergency door unlocks.","The witness admits the logs were altered.","The original test subject is redacted.","The machine remembers who built it.","The final record is behind the gate.","The truth is waiting beyond this run."],
+    ["A neon sign flashes a distress code.","The grid tracks every fast movement.","A runner leaves a trail of decoy signals.","The access code changes every few seconds.","The storm begins copying your route.","A resistance channel goes silent.","The sentinels converge on the code vault.","A safe path appears in the interference.","The code is broadcasting from the exit.","Take it before the grid goes dark."],
+    ["The channel works without a network.","A voice speaks from a blank timestamp.","Your lost seconds form a path ahead.","The void repeats a sound from childhood.","A beacon appears where nothing exists.","The map has no coordinates for this place.","Something follows just outside the screen.","The beacon begins to fade.","A message arrives from the other side.","The void knows what you have forgotten."],
+    ["A machine prints a copy of the current second.","The newest copy remembers your last run.","A technician marks one memory core as fragile.","The factory door opens for your signature.","The production line starts repeating your movements.","A copy sends a warning from inside the machine.","The shutdown sequence demands a living witness.","The line is collapsing into one minute.","The master switch is beyond the final gate.","Choose which memories survive."],
+    ["A warning flashes across every timeline.","The hunters share one synchronized clock.","A captured sentinel carries your old ID.","The resistance barricade has fallen.","The clocks begin striking out of order.","Captain Rook sends one last location ping.","The siege line is moving toward you.","The collector has stopped hiding.","Every clock now points to the same place.","The final confrontation begins at the gate."],
+    ["The root channel opens without a sender.","The collector repeats a sentence you forgot.","Your missing tomorrow appears in the logs.","The engine begins counting backward.","A hundred mission records align into one memory.","The collector offers to restore the old timeline.","The cost is written in your own handwriting.","The exit is collapsing into absolute zero.","There is only one decision left.","Whatever happens next will be your own time."]
+  ];
+  function renderStoryChat(index){
+    const level=LEVELS[index],chapter=CHAPTERS[level.chapter],contact=STORY_CONTACTS[level.chapter],beat=level.beat;
+    const chat=$("storyChat"),contactNode=$("chatContact"),avatar=document.querySelector(".chat-avatar");
+    const chapterNode=$("storyChapter"),progressNode=$("storyProgressText");
+    if(!chat)return;
+    if(contactNode)contactNode.textContent=contact.name;
+    if(avatar)avatar.textContent=contact.initial;
+    if(chapterNode)chapterNode.textContent="CHAPTER "+String(level.chapter+1).padStart(2,"0")+" / "+chapter.name;
+    if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
+    const clock=String(8+Math.floor(index/12)).padStart(2,"0")+":"+String((17+index*7)%60).padStart(2,"0");
+    const incoming=STORY_BEATS[level.chapter][beat];
+    const missionLine="Mission "+String(index+1).padStart(3,"0")+" — "+level.name+". "+level.story;
+    const messages=[
+      {from:contact.role,side:"incoming",text:beat===0?contact.open:incoming},
+      {from:"YOU",side:"outgoing",text:beat===9?"I can see the gate. Once I cross, there is no turning back.":contact.reply+" Mission "+String(index+1).padStart(3,"0")+" is "+level.name+"."},
+      {from:contact.role,side:"incoming",text:beat===9?contact.close:missionLine+" "+contact.close}
+    ];
+    chat.innerHTML='<div class="chat-time">'+clock+' · ENCRYPTED TIMELINE</div>'+messages.map(m=>'<div class="chat-message '+m.side+'"><span class="chat-sender">'+m.from+'</span><p></p></div>').join("");
+    chat.querySelectorAll(".chat-message p").forEach((node,i)=>{node.textContent=messages[i].text;});
+  }
   let levelIndex=Math.max(0,Math.min(99,Number(localStorage.getItem("td-level")||0)));
   let storyProgress=Math.max(0,Math.min(100,Number(localStorage.getItem("td-story-progress")||0)));
   if(ui.levelSelect)ui.levelSelect.innerHTML=LEVELS.map((level,i)=>`<option value="${i}">${String(i+1).padStart(3,"0")} · CH ${String(level.chapter+1).padStart(2,"0")} — ${level.name}</option>`).join("");
@@ -205,6 +249,7 @@
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
     if(ui.difficulty)ui.difficulty.value=difficultyKey;if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);
+    renderStoryChat(levelIndex);
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
       {x:0,y:FLOOR,w:430,h:74},{x:492,y:FLOOR,w:210,h:74},{x:772,y:FLOOR,w:270,h:74},

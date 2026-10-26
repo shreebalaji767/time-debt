@@ -308,7 +308,13 @@
     $("endSymbol").textContent=win?"✓":"×";
     $("endTitle").textContent=win?(levelIndex>=99?"The timeline is yours.":"Mission complete."):"Debt collected.";
     const completedLevel=LEVELS[levelIndex];
-    $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+(levelIndex>=99?"You have reached the end of the story.":"Next mission: "+String(Math.min(99,levelIndex+2)).padStart(3,"0")+" · "+LEVELS[Math.min(99,levelIndex+1)].name+".")):reason;
+    const nextButton=$("nextLevelBtn");
+    if(nextButton){
+      nextButton.classList.toggle("hidden",!win||levelIndex>=99);
+      nextButton.textContent="NEXT MISSION "+String(Math.min(100,levelIndex+2)).padStart(3,"0")+" →";
+      nextButton.setAttribute("aria-label","Start next mission "+String(Math.min(100,levelIndex+2)));
+    }
+    $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+(levelIndex>=99?"You have completed all 100 missions.":"Next mission unlocked: "+String(levelIndex+2).padStart(3,"0")+" · "+LEVELS[levelIndex+1].name+".")):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
@@ -530,6 +536,14 @@
   if(ui.levelSelect)ui.levelSelect.addEventListener("change",e=>chooseLevel(e.target.value));
   ui.exitBtn.addEventListener("click",exitGame);
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
+  const nextLevelBtn=$("nextLevelBtn");
+  if(nextLevelBtn)nextLevelBtn.addEventListener("click",()=>{
+    if(!ended||levelIndex>=99)return;
+    levelIndex=Math.min(99,levelIndex+1);
+    localStorage.setItem("td-level",String(levelIndex));
+    reset();
+    start();
+  });
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));
   document.querySelectorAll("[data-control]").forEach(button=>{
     const control=button.dataset.control;

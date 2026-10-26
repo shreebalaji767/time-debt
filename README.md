@@ -14,7 +14,7 @@ Open `index.html` in a modern browser, or serve the folder with any static file 
 - **R** — retry after a run ends
 
 ## Mechanics
-Reach the cyan exit beacon while the 45-second reserve lasts. Borrowing freezes moving hazards but accrues temporal debt. On release, the world accelerates while the debt is repaid. Red sentinels cause a time penalty and knockback. Stabilize the three gates on the way to the exit.
+Reach the cyan exit beacon while the 45-second reserve lasts. Borrowing freezes moving hazards but accrues temporal debt. On release, the world accelerates while the debt is repaid. Red sentinels cause a time penalty and knockback. Stabilize the three gates on the way to the exit; each gate establishes a checkpoint. Falling after a checkpoint restores you there at a five-second time cost.
 
 ## Technology
 - HTML, CSS, vanilla JavaScript
@@ -28,8 +28,8 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
-## Version 1.2.0
-- Added a continuously animated world preview with an autonomous runner, platforms, moving hazards, shards, and gates.
-- Aligned preview movement and gravity with the playable game and made borrowing freeze hazard motion rather than slow the runner.
-- Added preview hit knockback, brief hit immunity, and a visible borrow/repay cycle.
+## Version 1.3.0
+- Added gameplay checkpoints at stabilized gates, with safe respawn positions after a fall.
+- Falling after a checkpoint costs five seconds instead of immediately ending the run.
+- Updated the world preview to better match the playable game's movement and time-borrowing behavior.
 - Kept all visuals procedural and all gameplay dependencies browser-native.

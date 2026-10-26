@@ -301,7 +301,7 @@
     gates.forEach((g,i)=>{
       if(!g.hit&&player.x+player.w>g.x&&player.x<g.x+28&&player.y+player.h>g.y-45&&player.y<g.y+48){
         g.hit=true;unlocked=Math.max(unlocked,i+1);localStorage.setItem("td-gates",String(unlocked));
-        checkpoint={x:Math.min(3020,player.x+18),y:player.y,gate:i+1};
+        checkpoint=i===0?{x:980,y:492,gate:1}:i===1?{x:2120,y:421,gate:2}:{x:2800,y:416,gate:3};
         ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";say("GATE "+String(i+1).padStart(2,"0")+" STABILIZED // CHECKPOINT SET");tone(740,.15,"triangle");
       }
     });

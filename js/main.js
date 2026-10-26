@@ -153,11 +153,24 @@
     {history:"CLOCKWORK CARNAGE is where the surviving timelines collide. Each branch blames a different version of you for the collapse, so their clockwork armies converge on the same battlefield. Captain Rook commands the last defense around a fortress built from gears, broken gates and fragments of alternate cities.",rules:"Each army obeys the physics of its own timeline, making the battlefield unstable. Gates temporarily align branches; cross one at the right moment and a hostile route can become an escape. The central clock tower coordinates the collector's remaining defenses.",threats:"Hunters wear familiar faces, siege constructs close the safe routes, and rival timelines can overwrite parts of the arena. Rook's defense cannot hold forever, so every stabilized gate matters.",truth:"The armies were given edited evidence that you caused the fracture. The collector has been turning each branch against the others to prevent anyone from reaching the root channel together. The tower is the final barrier before the truth."},
     {history:"THE ENDLESS ZERO exists at the point where every clock reaches its last tick. Here the collector reveals the original bargain: you authorized the experiment to save someone you could not bear to lose. The machine interpreted that promise literally and spent tomorrow, then whole timelines, to keep the person alive.",rules:"The world has almost no forward time left. Every gate is a surviving decision, every shard a memory the system could not erase, and every borrowed second brings the machine closer to zero. The root engine can be broken, but its stored memories must be released rather than destroyed.",threats:"The collector can replay earlier hazards, offer false restorations and use your own messages against you. The final route collapses as the clock approaches zero; brute force cannot solve a choice encoded into the engine.",truth:"The collector did not choose the debt alone—you gave it the order, though the memory was removed to protect you. The ending depends on whether you preserve the old bargain, free the stored lives, or accept an uncertain future without rewriting anyone's fate."}
   ];
+  const GAMEPLAY_MODES = [
+    {name:"CHRONO RUN",brief:"Standard precision platforming. Learn the route and master time borrowing."},
+    {name:"LOW-G GRAVITY",brief:"Floaty jumps change every landing. Use long arcs to reach high ledges."},
+    {name:"HEAVY GRAVITY",brief:"Shorter, faster falls demand early jumps and exact landings."},
+    {name:"MOVING RUINS",brief:"Platforms drift vertically. Read their rhythm before committing to a jump."},
+    {name:"COLLAPSE RUN",brief:"Unstable ledges vanish shortly after you touch them. Keep moving."},
+    {name:"VERTICAL HUNT",brief:"Sentinels sweep up and down as well as across. Watch the full hazard path."},
+    {name:"CROSSWIND",brief:"A temporal gale pushes the runner sideways. Counter-steer in mid-air."},
+    {name:"BLACKOUT",brief:"The sector is nearly dark. Follow the gates, shards and hazard glows."},
+    {name:"TIME SURGE",brief:"The world accelerates in pulses. Borrow time tactically, then escape the repayment."},
+    {name:"COLLECTOR ELITE",brief:"A reinforced hunter joins the final approach. Survive the sector to open the chapter gate."}
+  ];
   const LEVELS = Array.from({length:100},(_,i)=>{
     const chapterIndex=Math.floor(i/10), beat=i%10, chapter=CHAPTERS[chapterIndex];
     const names=["FIRST SIGNAL","DEAD AIR","SHATTERED ROUTE","GHOST FREQUENCY","LOST CHECKPOINT","REDLINE CROSSING","ECHO CHAMBER","HOLLOW SKY","FINAL APPROACH","CHAPTER GATE"];
     const title=i===0?"THE BREACH":i===1?"LOST FUTURE":i===2?"GRAVITY RIOT":i===3?"BROKEN TIMELINE":i===4?"THE LAST LOOP":i===5?"NEON MAELSTROM":i===6?"VOID RUNNER":i===7?"PARADOX FACTORY":i===8?"CLOCKWORK CARNAGE":i===9?"THE ENDLESS ZERO":chapter.world+" // "+names[beat];
-    return {name:title,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
+    const mode=GAMEPLAY_MODES[beat];
+    return {name:title,mode:beat,modeName:mode.name,modeBrief:mode.brief,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
   });
   const STORY_CONTACTS=[
     {name:"MARA // SIGNAL OPERATOR",initial:"M",role:"MARA",open:"I found your signal. I thought you were erased with the rest of the morning.",reply:"I am alive. Tell me where to go.",close:"Follow the cyan gates. If the clock starts speaking, do not answer."},
@@ -194,8 +207,9 @@
     if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
     const clock=String(8+Math.floor(index/12)).padStart(2,"0")+":"+String((17+index*7)%60).padStart(2,"0");
     const incoming=STORY_BEATS[level.chapter][beat];
-    const missionLine="MISSION "+String(index+1).padStart(3,"0")+" — "+level.name+". "+level.story;
+    const missionLine="MISSION "+String(index+1).padStart(3,"0")+" — "+level.name+". GAMEPLAY: "+level.modeName+" — "+level.modeBrief+" "+level.story;
     const messages=[
+      {from:"SECTOR SYSTEM",side:"incoming",text:"LEVEL "+String(index+1).padStart(3,"0")+" // "+level.modeName+". "+level.modeBrief},
       {from:contact.role,side:"incoming",text:contact.open},
       {from:"WORLD ARCHIVE // "+chapter.world,side:"incoming",text:"WORLD HISTORY: "+lore.history},
       {from:contact.role,side:"incoming",text:"HOW THIS WORLD WORKS: "+lore.rules},
@@ -218,6 +232,7 @@
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
+  let gameplayMode = 0, modeClock = 0;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
   let missionRecords = {};
@@ -265,6 +280,7 @@
   function reset(){
     difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
+    gameplayMode=level.mode;modeClock=0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
@@ -289,17 +305,24 @@
       {x:2225,y:FLOOR-20,w:34,h:20,base:0,range:75,speed:1.6,phase:1.4},
       {x:2620,y:278,w:25,h:30,base:0,range:60,speed:1.7,phase:3}
     ];
-    hazards.forEach(h=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;});
+    // Each mission reshapes the route deterministically; the chapter story stays continuous.
+    platforms.forEach((p,i)=>{
+      if(i>=3&&i<=13){p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(34,8+levelIndex*.22),300,480);p.w=Math.max(82,p.w-(levelIndex%7)*3);}
+    });
+    hazards.forEach((h,i)=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.homeY=h.y;h.phase+=levelIndex*.19;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;if(gameplayMode===5){h.verticalRange=34+(i%3)*12;h.homeY=h.y;}});
     const extraByLevel=Math.min(6,levelIndex+(difficulty.extra||0));
     const extraSpawns=[{x:475,y:488,w:28,h:22,range:55,speed:1.7,phase:.8},{x:990,y:330,w:22,h:32,range:75,speed:1.9,phase:2.1},{x:1370,y:360,w:30,h:20,range:90,speed:2.1,phase:1.1},{x:1960,y:330,w:22,h:32,range:72,speed:2.2,phase:2.7},{x:2460,y:355,w:30,h:20,range:88,speed:2.3,phase:1.9},{x:2850,y:405,w:26,h:28,range:64,speed:2.4,phase:.3}];
-    for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x};h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
+    for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x,homeY:extraSpawns[i].y};if(gameplayMode===5)h.verticalRange=42;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
+    if(gameplayMode===9){const h={x:2785,y:388,w:38,h:38,base:2810,range:112,speed:2.6+levelIndex*.008,phase:levelIndex*.7,direction:1,alert:0,lastX:2785,homeY:388,verticalRange:22,elite:true};hazards.push(h);}
+    platforms.forEach((p,i)=>{if(gameplayMode===3&&i>=3&&i<=13){p.moving=true;p.baseY=p.y;p.moveAmp=20+(i%3)*7;p.moveSpeed=.7+(i%4)*.13;}if(gameplayMode===4&&i>=3&&i<=13){p.fragile=true;p.collapse=0;}});
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];
     shards=[{x:390,y:382,got:false},{x:640,y:304,got:false},{x:875,y:390,got:false},{x:1195,y:390,got:false},{x:1550,y:288,got:false},{x:1840,y:382,got:false},{x:2415,y:350,got:false},{x:2665,y:280,got:false}];
     motes=Array.from({length:110},()=>({x:rand(0,3100),y:rand(25,520),r:rand(.5,2),p:rand(0,6.28),s:rand(.15,.8)}));
     ui.time.textContent=TOTAL.toFixed(1); ui.timeMeter.style.width="100%";
     ui.debt.innerHTML='0.0<span>s</span>'; ui.debtMeter.style.width="0%";
     ui.paid.innerHTML='0.0<span>s</span>'; ui.world.textContent="WORLD FLOW: 1.0×";
-    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name;
+    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name+" · "+level.modeName;
+    say("GAMEPLAY // "+level.modeName);
     const storyChapter=$("storyChapter"),storyText=$("storyText"),storyProgressText=$("storyProgressText");if(storyChapter)storyChapter.textContent="CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0")+" / "+LEVELS[levelIndex].chapterName;if(storyText)storyText.textContent=LEVELS[levelIndex].story;if(storyProgressText)storyProgressText.textContent="STORY PROGRESS "+storyProgress+" / 100";
     ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
@@ -425,6 +448,7 @@
     elapsed+=dt;
     jumpBuffer=Math.max(0,jumpBuffer-dt);
     if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
+    modeClock+=dt;
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
     chaosClock+=dt;
@@ -444,15 +468,24 @@
     ui.paid.innerHTML=paid.toFixed(1)+'<span>s</span>';ui.world.textContent="WORLD FLOW: "+flow.toFixed(2)+"×";
     const accel=borrowedNow?0:flow;
     const dir=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
-    player.vx=dir*245*difficulty.speed; if(dir)player.face=dir;
+    const modeDir=gameplayMode===6?Math.sin(modeClock*1.9)*95:0;
+    const inputDir=gameplayMode===8&&Math.floor(modeClock/2.8)%2===1?-dir:dir;
+    player.vx=inputDir*245*difficulty.speed+modeDir; if(dir)player.face=dir;
     player.x+=player.vx*dt; player.x=clamp(player.x,0,3060);
     const prevY=player.y;
     const wasGrounded=player.ground;
-    player.vy+=difficulty.gravity*dt;player.y+=player.vy*dt;player.ground=false;
+    player.vy+=difficulty.gravity*dt;
+    if(gameplayMode===1)player.vy-=difficulty.gravity*.38*dt;
+    if(gameplayMode===2)player.vy+=difficulty.gravity*.48*dt;
+    player.y+=player.vy*dt;player.ground=false;
     for(const p of platforms){
+      if(p.moving)p.y=p.baseY+Math.sin(worldTime*p.moveSpeed+p.x*.01)*p.moveAmp;
+      if(p.fragile&&p.collapse>0){p.collapse=Math.max(0,p.collapse-dt);if(p.collapse===0)p.gone=true;}
+      if(p.gone)continue;
       // Sweep from the previous frame bottom to the current bottom to catch thin ledges reliably.
       if(player.x+player.w>p.x&&player.x<p.x+p.w&&prevY+player.h<=p.y+4&&player.y+player.h>=p.y&&player.vy>=0){
         player.y=p.y-player.h;player.vy=0;player.ground=true;
+        if(p.fragile&&p.collapse===0)p.collapse=.72;
       }
     }
     coyoteTime=player.ground ? .11 : (wasGrounded ? .11 : Math.max(0,coyoteTime-dt));
@@ -467,6 +500,9 @@
       if(!borrowedNow){
         const chaosBoost=chaosEvent>0?1.75:1;
         const patrol=h.base+Math.sin(worldTime*h.speed*chaosBoost+h.phase)*h.range;
+        h.x=patrol;
+        if(gameplayMode===5&&h.verticalRange)h.y=h.homeY+Math.sin(worldTime*h.speed*1.4+h.phase)*h.verticalRange;
+        if(gameplayMode===9&&h.elite)h.y=h.homeY+Math.sin(worldTime*2.3)*h.verticalRange;
         const distance=player.x-(h.base+h.w/2);
         const alertRange=difficultyKey==="paradox"?430:300;
         const targetBias=Math.abs(distance)<alertRange?clamp(distance/alertRange,-1,1)*difficulty.hunt*55:0;
@@ -500,7 +536,7 @@
     player.trail.forEach(t=>t.a-=dt*1.8);
     cameraX=clamp(player.x- W*.32,0, W*2.25);
     ui.x.textContent=String(Math.round(player.x)).padStart(3,"0");ui.y.textContent=String(Math.round(player.y)).padStart(3,"0");
-    ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name+" · "+(chaosEvent>0?chaosLabel:"CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0"));
+    ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name+" · "+LEVELS[levelIndex].modeName+" · "+(chaosEvent>0?chaosLabel:"CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0"));
     if(elapsed>=TOTAL)finish(false,"Your reserve reached zero. Time always collects.");
   }
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
@@ -519,7 +555,8 @@
     ctx.save();ctx.translate(-cameraX,0);
     // platforms
     for(const p of platforms){
-      ctx.fillStyle="#101d2b";ctx.fillRect(p.x,p.y,p.w,p.h);
+      if(p.gone)continue;
+      ctx.fillStyle=p.fragile&&p.collapse>0?"#7b3d43":"#101d2b";ctx.fillRect(p.x,p.y,p.w,p.h);
       ctx.fillStyle="#27465a";ctx.fillRect(p.x,p.y,p.w,2);
       for(let xx=p.x+10;xx<p.x+p.w;xx+=28){line(xx,p.y+8,xx,p.y+p.h,"#16283a",1);}
       ctx.fillStyle="#24465a";ctx.fillRect(p.x+7,p.y+8,12,2);
@@ -569,6 +606,9 @@
     // HUD overlays on canvas
     if(borrowedNow){ctx.fillStyle="#5de7f40b";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#5de7f4";ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.strokeRect(8,8,W-16,H-16);ctx.globalAlpha=1;}
     if(chaosEvent>0){ctx.fillStyle=levelIndex>=2?"#ff416b0b":"#ffb45408";ctx.fillRect(0,0,W,H);ctx.globalAlpha=.8;ctx.fillStyle="#ffb454";ctx.font="bold 12px monospace";ctx.fillText("! "+chaosLabel+" // "+chaosEvent.toFixed(1)+"s",18,30);ctx.globalAlpha=1;}
+    if(gameplayMode===7){const px=player?player.x-cameraX:W/2,py=player?player.y+player.h/2:H/2;const fog=ctx.createRadialGradient(px,py,80,px,py,330);fog.addColorStop(0,"#080d16aa");fog.addColorStop(.55,"#080d16e8");fog.addColorStop(1,"#02050bea");ctx.fillStyle=fog;ctx.fillRect(0,0,W,H);ctx.strokeStyle="#5de7f455";ctx.beginPath();ctx.arc(px,py,95+Math.sin(worldTime*2)*8,0,Math.PI*2);ctx.stroke();}
+    if(gameplayMode===8&&Math.floor(modeClock/2.8)%2===1){ctx.fillStyle="#ffb45412";ctx.fillRect(0,0,W,H);ctx.fillStyle="#ffb454";ctx.font="bold 11px monospace";ctx.fillText("CONTROL INVERSION // COUNTER-STEER",18,H-22);}
+    if(gameplayMode===6){ctx.strokeStyle="#ffb45422";for(let i=0;i<8;i++){const yy=70+i*61;ctx.beginPath();ctx.moveTo(mod(worldTime*160+i*117,W),yy);ctx.lineTo(mod(worldTime*160+i*117,W)-65,yy+12);ctx.stroke();}}
     // screen scanlines
     ctx.fillStyle="#d6f7ff06";for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,1);
     if(shake>0){shake=Math.max(0,shake-.7);}

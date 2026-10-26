@@ -128,8 +128,8 @@
   const W = 960, H = 600, FLOOR = 526, BASE_TOTAL = 45;
   let TOTAL = BASE_TOTAL;
   const DIFFICULTIES = {story:{label:"STORY",time:60,speed:.82,gravity:1200,jump:630,hazard:.7,penalty:1.2,hunt:0,chaos:0},standard:{label:"STANDARD",time:45,speed:1,gravity:1350,jump:590,hazard:1,penalty:2.5,hunt:.12,chaos:.25},paradox:{label:"PARADOX",time:40,speed:1.08,gravity:1450,jump:605,hazard:1.42,penalty:3.5,hunt:.32,chaos:.65,extra:1},nightmare:{label:"NIGHTMARE",time:35,speed:1.13,gravity:1510,jump:615,hazard:1.65,penalty:4,hunt:.42,chaos:1,extra:2}};
-  const LEVELS = [{name:"THE BREACH",time:0,hazard:1,chaos:1},{name:"LOST FUTURE",time:2,hazard:1.15,chaos:1.25},{name:"GRAVITY RIOT",time:1,hazard:1.3,chaos:1.7},{name:"BROKEN TIMELINE",time:0,hazard:1.48,chaos:2.1},{name:"THE LAST LOOP",time:-3,hazard:1.7,chaos:2.6}];
-  let levelIndex=Math.max(0,Math.min(4,Number(localStorage.getItem("td-level")||0)));
+  const LEVELS = [{name:"THE BREACH",time:0,hazard:1,chaos:1},{name:"LOST FUTURE",time:2,hazard:1.15,chaos:1.25},{name:"GRAVITY RIOT",time:1,hazard:1.3,chaos:1.7},{name:"BROKEN TIMELINE",time:0,hazard:1.48,chaos:2.1},{name:"THE LAST LOOP",time:-3,hazard:1.7,chaos:2.6},{name:"NEON MAELSTROM",time:-2,hazard:1.82,chaos:2.9},{name:"VOID RUNNER",time:-3,hazard:1.95,chaos:3.2},{name:"PARADOX FACTORY",time:-4,hazard:2.1,chaos:3.6},{name:"CLOCKWORK CARNAGE",time:-5,hazard:2.25,chaos:4},{name:"THE ENDLESS ZERO",time:-7,hazard:2.45,chaos:4.5}];
+  let levelIndex=Math.max(0,Math.min(9,Number(localStorage.getItem("td-level")||0)));
   let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
@@ -201,7 +201,7 @@
       {x:2620,y:278,w:25,h:30,base:0,range:60,speed:1.7,phase:3}
     ];
     hazards.forEach(h=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;});
-    const extraByLevel=[0,1,2,3,4][levelIndex]+(difficulty.extra||0);
+    const extraByLevel=Math.min(6,levelIndex+(difficulty.extra||0));
     const extraSpawns=[{x:475,y:488,w:28,h:22,range:55,speed:1.7,phase:.8},{x:990,y:330,w:22,h:32,range:75,speed:1.9,phase:2.1},{x:1370,y:360,w:30,h:20,range:90,speed:2.1,phase:1.1},{x:1960,y:330,w:22,h:32,range:72,speed:2.2,phase:2.7},{x:2460,y:355,w:30,h:20,range:88,speed:2.3,phase:1.9},{x:2850,y:405,w:26,h:28,range:64,speed:2.4,phase:.3}];
     for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x};h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];

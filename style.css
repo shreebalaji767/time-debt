@@ -553,3 +553,21 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .brand-name small{padding-left:1px}
 @media(max-width:560px){.brand-mark{width:36px;height:36px;flex-basis:36px}.brand-name{font-size:11px}.brand-name small{font-size:6px;letter-spacing:.16em}}
 @media(prefers-reduced-motion:reduce){.brand-mark{transition:none}.brand:hover .brand-mark{transform:none}}
+
+
+/* World dossier messenger — longer, readable lore for every chapter */
+.messenger .chat-thread{max-height:clamp(300px,42vh,430px);min-height:240px;overscroll-behavior:contain;scrollbar-color:#34566b #08111b;scrollbar-width:thin}
+.messenger .chat-thread::-webkit-scrollbar{width:7px}
+.messenger .chat-thread::-webkit-scrollbar-track{background:#08111b}
+.messenger .chat-thread::-webkit-scrollbar-thumb{background:#29495b;border:1px solid #08111b;border-radius:8px}
+.messenger .chat-time{position:sticky;top:-14px;z-index:1;align-self:center;padding:5px 10px;border:1px solid #233b4e;background:#0b1723eF;border-radius:2px}
+.messenger .chat-message{max-width:94%;padding:10px 12px;overflow-wrap:anywhere}
+.messenger .chat-message .chat-sender{line-height:1.5;color:#75dce8}
+.messenger .chat-message p{line-height:1.8;white-space:pre-wrap}
+.messenger .chat-message:nth-of-type(3),.messenger .chat-message:nth-of-type(4){border-left:2px solid #5de7f477}
+.messenger .chat-message.outgoing{border-right:2px solid #ffb45488}
+.messenger .chat-compose{position:relative;min-height:34px}
+.messenger .chat-compose::before{content:"FULL WORLD LORE · MISSION BRIEF · CHARACTERS · THREATS";color:#6d879c}
+.messenger .chat-compose>span:first-child,.messenger .chat-compose>span:nth-child(2){display:none}
+@media(max-width:520px){.messenger .chat-thread{max-height:clamp(260px,44vh,360px);min-height:220px}.messenger .chat-message{max-width:98%;padding:9px 10px}.messenger .chat-message p{font-size:9px;line-height:1.75}.messenger .chat-compose{font-size:6px;letter-spacing:.07em}}
+@media(prefers-reduced-motion:reduce){.messenger .chat-thread{scroll-behavior:auto}}

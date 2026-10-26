@@ -28,8 +28,13 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
+## Version 2.0.0 — Story Campaign
+- Expanded the campaign to 100 selectable missions across 10 narrative chapters.
+- Added mission-specific story text, chapter objectives, and local story progress tracking.
+- Added escalating per-mission hazard and chaos scaling while retaining the original browser-native controls and procedural art.
+
 ## Version 1.6.0
-- Expanded the game from five to ten selectable levels.
+- Expanded the game from ten to 100 selectable missions.
 - Added Neon Maelstrom, Void Runner, Paradox Factory, Clockwork Carnage, and The Endless Zero.
 - Increased late-game hazard speed and chaos intensity, with up to six extra sentinels.
 

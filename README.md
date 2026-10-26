@@ -28,6 +28,11 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
+## Version 1.6.0
+- Expanded the game from five to ten selectable levels.
+- Added Neon Maelstrom, Void Runner, Paradox Factory, Clockwork Carnage, and The Endless Zero.
+- Increased late-game hazard speed and chaos intensity, with up to six extra sentinels.
+
 ## Version 1.5.0
 - Added five selectable levels with escalating hazard density and chaos intensity.
 - Added four difficulty modes: Story, Standard, Paradox, and Nightmare.

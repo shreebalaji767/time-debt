@@ -28,8 +28,8 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
-## Version 1.1.0
-- Expanded live telemetry with per-run chrono shard collection and lifetime run counts.
-- Added persistent lifetime shard and run totals using LocalStorage.
-- Improved impact shake feedback, keyboard repeat handling, and touch/pointer event safety.
+## Version 1.2.0
+- Added a continuously animated world preview with an autonomous runner, platforms, moving hazards, shards, and gates.
+- Aligned preview movement and gravity with the playable game and made borrowing freeze hazard motion rather than slow the runner.
+- Added preview hit knockback, brief hit immunity, and a visible borrow/repay cycle.
 - Kept all visuals procedural and all gameplay dependencies browser-native.

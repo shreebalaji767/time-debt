@@ -13,7 +13,7 @@
   const W = 960, H = 600, FLOOR = 526, TOTAL = 45;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
-  let player, platforms, hazards, motes, gates, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
+  let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
   ui.best.textContent = best ? best.toFixed(1) + "s" : "—";
@@ -69,6 +69,7 @@
     ];
     hazards.forEach(h=>h.base=h.x);
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];
+    shards=[{x:390,y:382,got:false},{x:640,y:304,got:false},{x:875,y:390,got:false},{x:1195,y:390,got:false},{x:1550,y:288,got:false},{x:1840,y:382,got:false},{x:2415,y:350,got:false},{x:2665,y:280,got:false}];
     motes=Array.from({length:110},()=>({x:rand(0,3100),y:rand(25,520),r:rand(.5,2),p:rand(0,6.28),s:rand(.15,.8)}));
     ui.time.textContent=TOTAL.toFixed(1); ui.timeMeter.style.width="100%";
     ui.debt.innerHTML='0.0<span>s</span>'; ui.debtMeter.style.width="0%";
@@ -148,6 +149,11 @@
     if(!borrowedNow&&player.invuln<=0){
       // brief collision immunity after impact
     }
+    shards.forEach(s=>{
+      if(!s.got && player.x+player.w>s.x-10 && player.x<s.x+10 && player.y+player.h>s.y-10 && player.y<s.y+10){
+        s.got=true; elapsed=Math.max(0,elapsed-2.5); say("CHRONO SHARD // +2.5 SEC"); tone(820,.12,"triangle");
+      }
+    });
     gates.forEach((g,i)=>{
       if(!g.hit&&player.x+player.w>g.x&&player.x<g.x+28&&player.y+player.h>g.y-45&&player.y<g.y+48){
         g.hit=true;unlocked=Math.max(unlocked,i+1);localStorage.setItem("td-gates",String(unlocked));
@@ -183,6 +189,8 @@
       for(let xx=p.x+10;xx<p.x+p.w;xx+=28){line(xx,p.y+8,xx,p.y+p.h,"#16283a",1);}
       ctx.fillStyle="#24465a";ctx.fillRect(p.x+7,p.y+8,12,2);
     }
+    // Collectible chrono shards, drawn entirely in Canvas.
+    shards?.forEach((s,i)=>{if(s.got)return;const pulse=1+Math.sin(worldTime*5+i)*.15;ctx.save();ctx.translate(s.x,s.y);ctx.rotate(worldTime*.8+i);ctx.scale(pulse,pulse);ctx.shadowBlur=18;ctx.shadowColor="#5de7f4";ctx.fillStyle="#bafaff";ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(7,0);ctx.lineTo(0,9);ctx.lineTo(-7,0);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle="#5de7f4";ctx.stroke();ctx.restore();});
     // Gate markers and exit portal
     gates.forEach((g,i)=>{
       ctx.globalAlpha=g.hit?.3:1;
@@ -259,7 +267,14 @@
   });
   canvas.addEventListener("pointerup",e=>{if(touchX===e.pointerId){keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;}});
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
-  ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);\n  ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));\n  document.querySelectorAll("[data-control]").forEach(button=>{\n    const control=button.dataset.control;\n    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="borrow")keys.KeyE=true;};\n    const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};\n    button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);\n  });
+  ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
+  ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));
+  document.querySelectorAll("[data-control]").forEach(button=>{
+    const control=button.dataset.control;
+    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="borrow")keys.KeyE=true;};
+    const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};
+    button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);
+  });
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";if(soundOn)tone(600,.08);});
   window.addEventListener("resize",resize);
   reset();resize();

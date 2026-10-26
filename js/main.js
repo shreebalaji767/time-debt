@@ -209,7 +209,7 @@
     const incoming=STORY_BEATS[level.chapter][beat];
     const missionLine="MISSION "+String(index+1).padStart(3,"0")+" — "+level.name+". GAMEPLAY: "+level.modeName+" — "+level.modeBrief+" "+level.story;
     const messages=[
-      {from:"SECTOR SYSTEM",side:"incoming",text:"LEVEL "+String(index+1).padStart(3,"0")+" // "+level.modeName+". "+level.modeBrief},
+      {from:"SECTOR SYSTEM",side:"incoming",text:"LEVEL "+String(index+1).padStart(3,"0")+" // "+level.modeName+". "+level.modeBrief+" PHASE DASH: press X for a quick invulnerable burst; 1.15-second cooldown."},
       {from:contact.role,side:"incoming",text:contact.open},
       {from:"WORLD ARCHIVE // "+chapter.world,side:"incoming",text:"WORLD HISTORY: "+lore.history},
       {from:contact.role,side:"incoming",text:"HOW THIS WORLD WORKS: "+lore.rules},
@@ -232,7 +232,7 @@
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
-  let gameplayMode = 0, modeClock = 0;
+  let gameplayMode = 0, modeClock = 0, dashCooldown = 0, dashTime = 0, dashDirection = 1;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
   let missionRecords = {};
@@ -280,7 +280,7 @@
   function reset(){
     difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
-    gameplayMode=level.mode;modeClock=0;
+    gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
@@ -421,6 +421,13 @@
       tone(660,.15,"triangle");setTimeout(()=>tone(880,.22,"triangle"),100);
     }else{shake=10;tone(110,.4,"sawtooth",.045);}
   }
+  function dash(){
+    if(!running||paused||ended||dashCooldown>0)return;
+    dashDirection=(keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:(player?.face||1);
+    dashTime=.19;dashCooldown=1.15;player.vx=dashDirection*650;player.invuln=Math.max(player.invuln,.24);
+    player.trail.push({x:player.x+player.w/2,y:player.y+player.h/2,a:.28});
+    say("PHASE DASH // "+(dashDirection>0?"FORWARD":"REVERSE"));tone(690,.07,"sawtooth",.025);
+  }
   function jump(){
     if(!running||ended)return;
     jumpBuffer=.14;
@@ -448,7 +455,7 @@
     elapsed+=dt;
     jumpBuffer=Math.max(0,jumpBuffer-dt);
     if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
-    modeClock+=dt;
+    modeClock+=dt;dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
     chaosClock+=dt;
@@ -470,7 +477,8 @@
     const dir=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
     const modeDir=gameplayMode===6?Math.sin(modeClock*1.9)*95:0;
     const inputDir=gameplayMode===8&&Math.floor(modeClock/2.8)%2===1?-dir:dir;
-    player.vx=inputDir*245*difficulty.speed+modeDir; if(dir)player.face=dir;
+    if(dashTime>0){player.vx=dashDirection*650;player.face=dashDirection;}
+    else {player.vx=inputDir*245*difficulty.speed+modeDir;if(dir)player.face=dir;}
     player.x+=player.vx*dt; player.x=clamp(player.x,0,3060);
     const prevY=player.y;
     const wasGrounded=player.ground;
@@ -599,6 +607,7 @@
         ctx.fillStyle="#5de7f4";ctx.fillRect(-player.w/2+3,player.h/2-5,player.w-6,3);
       }
       ctx.restore();
+      if(dashTime>0){ctx.save();ctx.globalAlpha=.65;ctx.strokeStyle="#ffb454";ctx.lineWidth=3;for(let i=1;i<=4;i++){ctx.globalAlpha=.65-i*.12;ctx.beginPath();ctx.moveTo(px+player.w/2-dashDirection*i*13,py+5);ctx.lineTo(px+player.w/2-dashDirection*i*13,py+player.h-5);ctx.stroke();}ctx.restore();}
       // borrow aura
       if(borrowedNow){ctx.strokeStyle="#5de7f477";ctx.lineWidth=1;ctx.beginPath();ctx.arc(px+12,py+17,30+Math.sin(worldTime*9)*3,0,Math.PI*2);ctx.stroke();}
     }
@@ -626,6 +635,7 @@
     if(["ArrowLeft","ArrowRight","ArrowUp","Space","ShiftLeft","ShiftRight"].includes(code))e.preventDefault();
     keys[code]=true;
     if((code==="Space"||code==="ArrowUp"||code==="KeyW")&&!e.repeat)jump();
+    if(code==="KeyX"&&!e.repeat)dash();
     if(code==="Enter"&&!running&&!ui.gameLayout.classList.contains("is-hidden"))start();
     if((code==="KeyP"||code==="Escape")&&!e.repeat&&running&&!ended){setPaused(!paused);return;}
     if(code==="KeyR"&&!e.repeat&&ended)start();
@@ -660,7 +670,7 @@
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));
   document.querySelectorAll("[data-control]").forEach(button=>{
     const control=button.dataset.control;
-    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="borrow")keys.KeyE=true;};
+    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="dash")dash();else if(control==="borrow")keys.KeyE=true;};
     const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};
     button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);
   });

@@ -156,6 +156,8 @@
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let best = Number(localStorage.getItem("td-best") || 0);
+  let missionRecords = {};
+  try { missionRecords = JSON.parse(localStorage.getItem("td-mission-records") || "{}") || {}; } catch (_) { missionRecords = {}; }
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
   let totalShards = Number(localStorage.getItem("td-shards") || 0);
   let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
@@ -319,7 +321,11 @@
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
       const nextProgress=Math.max(storyProgress,levelIndex+1);storyProgress=nextProgress;localStorage.setItem("td-story-progress",String(nextProgress));const progressNode=$("storyProgressText");if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
-      if(levelIndex<99){levelIndex=Math.max(levelIndex,Math.min(99,nextProgress));localStorage.setItem("td-level",String(levelIndex));}
+      // Persist the next campaign position without changing the active mission index.
+      // The Next Mission button advances the active index exactly once.
+      if(levelIndex<99)localStorage.setItem("td-level",String(Math.min(99,Math.max(levelIndex+1,nextProgress))));
+      const recordKey=String(levelIndex),previousRecord=Number(missionRecords[recordKey]||0);
+      if(!previousRecord||elapsed<previousRecord){missionRecords[recordKey]=Number(elapsed.toFixed(2));localStorage.setItem("td-mission-records",JSON.stringify(missionRecords));}
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
       unlocked=Math.max(unlocked,3);localStorage.setItem("td-gates",String(unlocked));ui.gates.innerHTML="3 <small>/ 3</small>";
       tone(660,.15,"triangle");setTimeout(()=>tone(880,.22,"triangle"),100);

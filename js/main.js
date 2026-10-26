@@ -4,6 +4,7 @@
   const ctx = canvas.getContext("2d", { alpha: false });
   const $ = id => document.getElementById(id);
   const ui = {
+    skillPoints: $("skillPoints"), skillTree: $("skillTree"),
     start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), logoLink: $("logoLink"), pauseBtn: $("pauseBtn"), exitBtn: $("exitBtn"), landingPlayBtn: $("landingPlayBtn"), gameLayout: $("gameLayout"), landingIntro: $("landingIntro"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
     difficulty: $("difficultySelect"), levelSelect: $("levelSelect"), time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
     best: $("bestValue"), gates: $("gateValue"), shards: $("shardValue"), runs: $("runsValue"), paid: $("paidValue"), level: $("levelLabel"),
@@ -252,6 +253,9 @@
   try { missionRecords = JSON.parse(localStorage.getItem("td-mission-records") || "{}") || {}; } catch (_) { missionRecords = {}; }
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
   let totalShards = Number(localStorage.getItem("td-shards") || 0);
+  const SKILLS=[{id:"reserve",name:"TIME RESERVE",desc:"+3 seconds per rank",max:3,cost:2},{id:"jump",name:"KINETIC DRIVE",desc:"+7% jump power per rank",max:3,cost:2},{id:"dash",name:"PHASE COIL",desc:"Dash cooldown −0.15s per rank",max:3,cost:2},{id:"armor",name:"DEBT ARMOR",desc:"Reduce hit penalties by 10% per rank",max:3,cost:3}];
+  let skillLevels={};try{skillLevels=JSON.parse(localStorage.getItem("td-skills")||"{}");}catch{skillLevels={};}
+  SKILLS.forEach(skill=>{skillLevels[skill.id]=Math.max(0,Math.min(skill.max,Number(skillLevels[skill.id])||0));});
   let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
   let runShards = 0;
   let checkpoint = {x:68,y:450,gate:0};
@@ -263,6 +267,13 @@
   const rand = (a,b) => a + Math.random()*(b-a);
   const mod = (n,m) => ((n%m)+m)%m;
 
+  function renderSkillTree(){
+    if(ui.skillPoints)ui.skillPoints.textContent=String(totalShards);
+    if(!ui.skillTree)return;
+    ui.skillTree.innerHTML=SKILLS.map(skill=>{const level=skillLevels[skill.id]||0;const cost=skill.cost*(level+1);const capped=level>=skill.max;return `<div class="skill-row"><div class="skill-copy"><strong>${skill.name}</strong><small>${skill.desc}</small><span>RANK ${level}/${skill.max}</span></div><button type="button" class="skill-buy" data-buy-skill="${skill.id}" ${capped||totalShards<cost?"disabled":""}>${capped?"MAXED":"UPGRADE · "+cost+" ◈"}</button></div>`;}).join("");
+  }
+  function buySkill(id){const skill=SKILLS.find(item=>item.id===id);if(!skill)return;const level=skillLevels[id]||0;const cost=skill.cost*(level+1);if(level>=skill.max||totalShards<cost)return;totalShards-=cost;skillLevels[id]=level+1;localStorage.setItem("td-shards",String(totalShards));localStorage.setItem("td-skills",JSON.stringify(skillLevels));renderSkillTree();say(skill.name+" // RANK "+skillLevels[id]);tone(760,.12,"triangle",.03);}
+  if(ui.skillTree)ui.skillTree.addEventListener("click",e=>{const button=e.target.closest("[data-buy-skill]");if(button&&!button.disabled)buySkill(button.dataset.buySkill);});
   function resize(){
     // Hidden canvases report zero width. Use a safe logical width until the game
     // shell is visible, then resize again immediately when Play is pressed.
@@ -291,7 +302,7 @@
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1500);
   }
   function reset(){
-    difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
+    difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time+(skillLevels.reserve||0)*3);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
     gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;
     const bossProfile=BOSSES[Math.floor(levelIndex/10)];const bossHp=7+Math.floor(levelIndex/10);boss=levelIndex%10===9?{...bossProfile,x:2760,y:410,w:72,h:88,hp:bossHp,maxHp:bossHp,attackClock:1.2,hitFlash:0,defeated:false,phase:0,specialClock:2.5,shielded:false,teleportClock:3.2,chapter:Math.floor(levelIndex/10)}:null;bossBolts=[];bossNotice=boss?2.5:0;
@@ -438,7 +449,7 @@
   function dash(){
     if(!running||paused||ended||dashCooldown>0)return;
     dashDirection=(keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:(player?.face||1);
-    dashTime=.19;dashCooldown=1.15;player.vx=dashDirection*650;player.invuln=Math.max(player.invuln,.24);
+    dashTime=.19;dashCooldown=Math.max(.55,1.15-(skillLevels.dash||0)*.15);player.vx=dashDirection*650;player.invuln=Math.max(player.invuln,.24);
     player.trail.push({x:player.x+player.w/2,y:player.y+player.h/2,a:.28});
     say("PHASE DASH // "+(dashDirection>0?"FORWARD":"REVERSE"));tone(690,.07,"sawtooth",.025);
   }
@@ -448,7 +459,7 @@
     if(player.ground||coyoteTime>0)performJump();
   }
   function performJump(){
-    player.vy=-difficulty.jump;player.ground=false;coyoteTime=0;jumpBuffer=0;
+    player.vy=-difficulty.jump*(1+(skillLevels.jump||0)*.07);player.ground=false;coyoteTime=0;jumpBuffer=0;
     tone(270,.055,"triangle",.02);
   }
   function chooseDifficulty(value){
@@ -490,7 +501,7 @@
       if(boss.attackClock<=0){const enraged=boss.hp<=Math.ceil(boss.maxHp/2);boss.attackClock=Math.max(.48,(enraged?.78:1.48)-levelIndex*.003);const ox=boss.x+boss.w/2,oy=boss.y+boss.h/2,dx=player.x+player.w/2-ox,dy=player.y+player.h/2-oy,len=Math.max(1,Math.hypot(dx,dy)),speed=250+levelIndex*.6,shot=(vx,vy)=>bossBolts.push({x:ox,y:oy,vx,vy,r:8,life:4,color:boss.color});if(boss.pattern==="spread"){for(const a of [-.32,0,.32]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="rain"){for(let i=0;i<(enraged?4:2);i++)shot((i-(enraged?1.5:.5))*62,230+levelIndex*.4);}else if(boss.pattern==="double"){for(const a of [-.16,.16]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="burst"){for(let i=0;i<(enraged?10:6);i++){const ang=i*Math.PI*2/(enraged?10:6)+boss.phase;shot(Math.cos(ang)*speed*.8,Math.sin(ang)*speed*.8);}}else if(boss.pattern==="sweep"){for(const a of [-.5,-.25,0,.25,.5]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed*.9,Math.sin(ang)*speed*.9);}}else shot(dx/len*speed,dy/len*speed);tone(240,.07,"square",.018);}
       if(dashTime>0&&player.x+player.w>boss.x&&player.x<boss.x+boss.w&&player.y+player.h>boss.y&&player.y<boss.y+boss.h){if(boss.shielded){dashTime=0;player.invuln=Math.max(player.invuln,.2);say("CORE SHIELDED // WAIT FOR THE OPENING");tone(180,.1,"square",.025);}else{boss.hp=Math.max(0,boss.hp-(boss.hp<=Math.ceil(boss.maxHp/2)?2:1));boss.hitFlash=.22;player.x+=dashDirection*48;dashTime=0;shake=8;tone(520,.1,"sawtooth",.03);say("PHASE STRIKE // BOSS CORE DAMAGED");if(boss.hp===0){boss.defeated=true;bossBolts=[];elapsed=Math.max(0,elapsed-4);say("COLLECTOR CORE SHATTERED // +4 SEC");tone(880,.25,"triangle",.04);}}}
     }
-    bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty);shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
+    bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty*(1-(skillLevels.armor||0)*.1));shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
     ui.time.textContent=left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
     ui.time.style.color=left<10?"var(--red)":"var(--cyan)";
     ui.debt.innerHTML=debt.toFixed(1)+'<span>s</span>';ui.debtMeter.style.width=(debt/12*100)+"%";
@@ -549,7 +560,7 @@
     shards.forEach(s=>{
       if(!s.got && player.x+player.w>s.x-10 && player.x<s.x+10 && player.y+player.h>s.y-10 && player.y<s.y+10){
         s.got=true; runShards+=1; totalShards+=1; localStorage.setItem("td-shards",String(totalShards));
-        ui.shards.innerHTML=runShards+" <small>/ 8</small>";
+        ui.shards.innerHTML=runShards+" <small>/ 8</small>";renderSkillTree();
         elapsed=Math.max(0,elapsed-2.5); say("CHRONO SHARD // +2.5 SEC"); tone(820,.12,"triangle");
       }
     });
@@ -705,5 +716,5 @@
   });
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";if(soundOn)tone(600,.08);});
   window.addEventListener("resize",resize);
-  reset();resize();
+  renderSkillTree();reset();resize();
 })();

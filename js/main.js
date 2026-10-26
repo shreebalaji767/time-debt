@@ -134,6 +134,7 @@
   let totalShards = Number(localStorage.getItem("td-shards") || 0);
   let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
   let runShards = 0;
+  let checkpoint = {x:68,y:450,gate:0};
   ui.shards.textContent = "0 / 8";
   ui.runs.textContent = String(runsPlayed);
   ui.best.textContent = best ? best.toFixed(1) + "s" : "—";
@@ -168,6 +169,7 @@
   }
   function reset(){
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
+    checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
@@ -273,7 +275,12 @@
         player.y=p.y-player.h;player.vy=0;player.ground=true;
       }
     }
-    if(player.y>H+90){finish(false,"You fell outside the timeline. Find the next platform.");return;}
+    if(player.y>H+90){
+      if(checkpoint.gate>0&&elapsed<TOTAL-5){
+        elapsed=Math.min(TOTAL-1,elapsed+5);player.x=checkpoint.x;player.y=checkpoint.y;player.vx=0;player.vy=0;player.ground=false;player.invuln=1.2;
+        cameraX=clamp(player.x-W*.32,0,W*2.25);shake=6;say("CHECKPOINT RESTORED // 5 SEC LOST");tone(220,.18,"triangle");
+      }else{finish(false,"You fell outside the timeline. Reach a gate to establish a checkpoint.");return;}
+    }
     for(const h of hazards){
       if(!borrowedNow)h.x=h.base+Math.sin(worldTime*h.speed+h.phase)*h.range;
       if(!borrowedNow&&player.invuln<=0&&player.x+player.w>h.x&&player.x<h.x+h.w&&player.y+player.h>h.y&&player.y<h.y+h.h){
@@ -294,7 +301,8 @@
     gates.forEach((g,i)=>{
       if(!g.hit&&player.x+player.w>g.x&&player.x<g.x+28&&player.y+player.h>g.y-45&&player.y<g.y+48){
         g.hit=true;unlocked=Math.max(unlocked,i+1);localStorage.setItem("td-gates",String(unlocked));
-        ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";say("GATE "+String(i+1).padStart(2,"0")+" STABILIZED");tone(740,.15,"triangle");
+        checkpoint={x:Math.min(3020,player.x+18),y:player.y,gate:i+1};
+        ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";say("GATE "+String(i+1).padStart(2,"0")+" STABILIZED // CHECKPOINT SET");tone(740,.15,"triangle");
       }
     });
     if(player.x>2885&&player.y<470){finish(true);return;}

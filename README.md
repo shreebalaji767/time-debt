@@ -1,5 +1,11 @@
 # TIME DEBT
 
+## Version 2.3.0 — Temporal Fracture Branding
+- Replaced the old text-only mark with a custom TIME DEBT temporal-fracture emblem.
+- Reused the exact same SVG asset for the header logo and browser favicon to keep the identity consistent.
+- Improved logo hover/focus feedback, small-screen sizing, and reduced-motion behavior.
+- Kept the project dependency-free and static-hosting compatible.
+
 A code-generated, browser-native temporal survival platformer. No downloaded art, no external runtime libraries, no backend, and no database.
 
 ## Run locally

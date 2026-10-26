@@ -255,12 +255,24 @@
   }
   function jump(){
     if(!running||ended)return;
-    if(player.ground){player.vy=-590;player.ground=false;tone(270,.055,"triangle",.02);}
+    jumpBuffer=.14;
+    if(player.ground||coyoteTime>0)performJump();
+  }
+  function performJump(){
+    player.vy=-difficulty.jump;player.ground=false;coyoteTime=0;jumpBuffer=0;
+    tone(270,.055,"triangle",.02);
+  }
+  function chooseDifficulty(value){
+    if(!DIFFICULTIES[value])return;
+    difficultyKey=value;difficulty=DIFFICULTIES[value];localStorage.setItem("td-difficulty",value);
+    if(!running)reset();
+    say(difficulty.label+" MODE SELECTED");
   }
   function borrow(){return running&&!ended&&(keys.KeyE||keys.ShiftLeft||keys.ShiftRight||keys[" " + "Borrow"]);}
   function update(dt){
     if(ended)return;
     elapsed+=dt;
+    jumpBuffer=Math.max(0,jumpBuffer-dt);
     if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
@@ -276,15 +288,18 @@
     ui.paid.innerHTML=paid.toFixed(1)+'<span>s</span>';ui.world.textContent="WORLD FLOW: "+flow.toFixed(2)+"×";
     const accel=borrowedNow?0:flow;
     const dir=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0);
-    player.vx=dir*245; if(dir)player.face=dir;
+    player.vx=dir*245*difficulty.speed; if(dir)player.face=dir;
     player.x+=player.vx*dt; player.x=clamp(player.x,0,3060);
-    player.vy+=1350*dt;player.y+=player.vy*dt;player.ground=false;
-    const prevY=player.y-player.vy*dt;
+    const prevY=player.y;
+    const wasGrounded=player.ground;
+    player.vy+=difficulty.gravity*dt;player.y+=player.vy*dt;player.ground=false;
     for(const p of platforms){
       if(player.x+player.w>p.x&&player.x<p.x+p.w&&prevY+player.h<=p.y+5&&player.y+player.h>=p.y&&player.vy>=0){
         player.y=p.y-player.h;player.vy=0;player.ground=true;
       }
     }
+    coyoteTime=player.ground ? .11 : (wasGrounded ? .11 : Math.max(0,coyoteTime-dt));
+    if(jumpBuffer>0&&(player.ground||coyoteTime>0))performJump();
     if(player.y>H+90){
       if(checkpoint.gate>0&&elapsed<TOTAL-5){
         elapsed=Math.min(TOTAL-1,elapsed+5);player.x=checkpoint.x;player.y=checkpoint.y;player.vx=0;player.vy=0;player.ground=false;player.invuln=1.2;
@@ -292,9 +307,15 @@
       }else{finish(false,"You fell outside the timeline. Reach a gate to establish a checkpoint.");return;}
     }
     for(const h of hazards){
-      if(!borrowedNow)h.x=h.base+Math.sin(worldTime*h.speed+h.phase)*h.range;
+      if(!borrowedNow){
+        const patrol=h.base+Math.sin(worldTime*h.speed+h.phase)*h.range;
+        const distance=player.x-(h.base+h.w/2);
+        const alertRange=difficultyKey==="paradox"?430:300;
+        const targetBias=Math.abs(distance)<alertRange?clamp(distance/alertRange,-1,1)*difficulty.hunt*55:0;
+        h.x=patrol+targetBias;
+      }
       if(!borrowedNow&&player.invuln<=0&&player.x+player.w>h.x&&player.x<h.x+h.w&&player.y+player.h>h.y&&player.y<h.y+h.h){
-        player.invuln=.9;player.vy=-340;player.vx=-player.face*140;elapsed=Math.min(TOTAL,elapsed+2.5);shake=8;say("PARADOX HIT // 2.5 SEC LOST");tone(90,.2,"square",.035);
+        player.invuln=.9;player.vy=-340;player.vx=-player.face*140;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty);shake=8;say("PARADOX HIT // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(90,.2,"square",.035);
       }
     }
     player.invuln=Math.max(0,player.invuln-dt);
@@ -425,6 +446,7 @@
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
   ui.logoLink.addEventListener("click",e=>{e.preventDefault();if(!ui.gameLayout.classList.contains("is-hidden"))exitGame();else window.scrollTo({top:0,behavior:"smooth"});});
   ui.landingPlayBtn.addEventListener("click",()=>{showGame();start();});
+  if(ui.difficulty)ui.difficulty.addEventListener("change",e=>chooseDifficulty(e.target.value));
   ui.exitBtn.addEventListener("click",exitGame);
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));

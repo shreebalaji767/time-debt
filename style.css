@@ -504,3 +504,12 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .run-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(100%,430px);margin:0 auto 14px}
 .run-options .difficulty-picker{margin:0;min-width:0}
 @media(max-width:520px){.run-options{grid-template-columns:1fr;gap:8px;width:min(100%,320px)}}
+
+
+/* Story campaign edition */
+.story-card{width:min(100%,650px);margin:18px 0 17px;border:1px solid #31465a;background:linear-gradient(110deg,#0c1724f5,#10101d);box-shadow:inset 2px 0 #5de7f4;position:relative;z-index:1}
+.story-card-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid #ffffff12;color:var(--cyan);font-size:8px;letter-spacing:.1em}
+.story-card-top span:last-child{color:#8b9bb0}
+.story-card p{margin:0;padding:12px;color:#c2d0df;font-size:11px;line-height:1.8;max-width:600px}
+#levelSelect{min-width:200px;max-width:min(340px,75vw)}
+@media(max-width:520px){.story-card-top{font-size:7px;gap:6px}.story-card p{font-size:10px}.story-card{margin:14px 0}}

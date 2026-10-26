@@ -414,7 +414,7 @@
   canvas.addEventListener("pointerup",e=>{if(touchX===e.pointerId){keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;}});
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
   ui.logoLink.addEventListener("click",e=>{e.preventDefault();if(!ui.gameLayout.classList.contains("is-hidden"))exitGame();else window.scrollTo({top:0,behavior:"smooth"});});
-  ui.landingPlayBtn.addEventListener("click",()=>{showGame();});
+  ui.landingPlayBtn.addEventListener("click",()=>{showGame();start();});
   ui.exitBtn.addEventListener("click",exitGame);
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));

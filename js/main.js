@@ -263,6 +263,14 @@
       if(!canvas || !ctx)throw new Error("The game canvas is unavailable.");
       resize();
       reset();
+      // Restore the normal briefing after a previous startup error so Retry can recover.
+      const startHeading=ui.start.querySelector("h2"),startCopy=ui.start.querySelector("p"),startKicker=ui.start.querySelector(".overlay-kicker");
+      if(startHeading)startHeading.textContent="Break the loop.";
+      if(startCopy)startCopy.textContent="One hundred missions. Ten story chapters. Uncover who stole tomorrow, outlast the collector, and decide the fate of the timeline.";
+      if(startKicker)startKicker.textContent="TEMPORAL ANOMALY DETECTED";
+      ui.startBtn.textContent="INITIATE RUN ↗";
+      ui.run.textContent="READY TO START";
+      ui.gameLayout.setAttribute("aria-busy","false");
       ui.start.classList.add("hidden");
       ui.pause.classList.add("hidden");
       ui.end.classList.add("hidden");
@@ -298,8 +306,9 @@
     ui.end.classList.remove("hidden");
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";
     $("endSymbol").textContent=win?"✓":"×";
-    $("endTitle").textContent=win?(levelIndex>=99?"The timeline is yours.":"Chapter cleared."):"Debt collected.";
-    $("endCopy").textContent=win?(LEVELS[Math.max(0,levelIndex-1)].story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+(levelIndex>=99?"You have reached the end of the story.":"Next mission unlocked: "+LEVELS[levelIndex].name+".")):reason;
+    $("endTitle").textContent=win?(levelIndex>=99?"The timeline is yours.":"Mission complete."):"Debt collected.";
+    const completedLevel=LEVELS[levelIndex];
+    $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+(levelIndex>=99?"You have reached the end of the story.":"Next mission: "+String(Math.min(99,levelIndex+2)).padStart(3,"0")+" · "+LEVELS[Math.min(99,levelIndex+1)].name+".")):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){

@@ -128,8 +128,26 @@
   const W = 960, H = 600, FLOOR = 526, BASE_TOTAL = 45;
   let TOTAL = BASE_TOTAL;
   const DIFFICULTIES = {story:{label:"STORY",time:60,speed:.82,gravity:1200,jump:630,hazard:.7,penalty:1.2,hunt:0,chaos:0},standard:{label:"STANDARD",time:45,speed:1,gravity:1350,jump:590,hazard:1,penalty:2.5,hunt:.12,chaos:.25},paradox:{label:"PARADOX",time:40,speed:1.08,gravity:1450,jump:605,hazard:1.42,penalty:3.5,hunt:.32,chaos:.65,extra:1},nightmare:{label:"NIGHTMARE",time:35,speed:1.13,gravity:1510,jump:615,hazard:1.65,penalty:4,hunt:.42,chaos:1,extra:2}};
-  const LEVELS = [{name:"THE BREACH",time:0,hazard:1,chaos:1},{name:"LOST FUTURE",time:2,hazard:1.15,chaos:1.25},{name:"GRAVITY RIOT",time:1,hazard:1.3,chaos:1.7},{name:"BROKEN TIMELINE",time:0,hazard:1.48,chaos:2.1},{name:"THE LAST LOOP",time:-3,hazard:1.7,chaos:2.6},{name:"NEON MAELSTROM",time:-2,hazard:1.82,chaos:2.9},{name:"VOID RUNNER",time:-3,hazard:1.95,chaos:3.2},{name:"PARADOX FACTORY",time:-4,hazard:2.1,chaos:3.6},{name:"CLOCKWORK CARNAGE",time:-5,hazard:2.25,chaos:4},{name:"THE ENDLESS ZERO",time:-7,hazard:2.45,chaos:4.5}];
-  let levelIndex=Math.max(0,Math.min(9,Number(localStorage.getItem("td-level")||0)));
+  const CHAPTERS = [
+    {name:"THE FIRST FRACTURE",world:"THE BREACH",intro:"The city clock stopped at 08:17. You woke up with tomorrow missing.",goal:"Recover the first chrono-core and find who stole the morning."},
+    {name:"ASHES OF TOMORROW",world:"LOST FUTURE",intro:"You cross a future that should never have happened. Every ruin remembers you.",goal:"Trace the signal through the abandoned districts."},
+    {name:"GRAVITY OF GUILT",world:"GRAVITY RIOT",intro:"Gravity has become a weapon. The city is falling upward into its own past.",goal:"Reach the orbital relay and restore the laws of motion."},
+    {name:"THE MEMORY WAR",world:"BROKEN TIMELINE",intro:"A second version of you is rewriting the memories of everyone left alive.",goal:"Secure the memory keys before your past is erased."},
+    {name:"THE LAST WITNESS",world:"THE LAST LOOP",intro:"The last human witness tells you the truth: the debt collector was built to save you.",goal:"Find the original experiment hidden beneath the loop."},
+    {name:"NEON EXILE",world:"NEON MAELSTROM",intro:"The machine has spread into the neon storm. Its sentinels now hunt by your heartbeat.",goal:"Cross the storm grid and steal the master access code."},
+    {name:"BELOW THE VOID",world:"VOID RUNNER",intro:"Beyond the city lies a blank place where lost seconds go to die.",goal:"Follow the fading beacon into the unrecorded dark."},
+    {name:"THE PARADOX ENGINE",world:"PARADOX FACTORY",intro:"You discover a factory building copies of the same doomed minute.",goal:"Disable the production line without erasing the people inside."},
+    {name:"WAR OF THE CLOCKS",world:"CLOCKWORK CARNAGE",intro:"Every timeline has sent an army. All of them believe you caused the collapse.",goal:"Survive the clockwork siege and confront the collector."},
+    {name:"ZERO HOUR",world:"THE ENDLESS ZERO",intro:"At the end of time, the collector reveals your missing tomorrow was the price of its creation.",goal:"Break the engine, repay the debt, and choose what comes after time."}
+  ];
+  const LEVELS = Array.from({length:100},(_,i)=>{
+    const chapterIndex=Math.floor(i/10), beat=i%10, chapter=CHAPTERS[chapterIndex];
+    const names=["FIRST SIGNAL","DEAD AIR","SHATTERED ROUTE","GHOST FREQUENCY","LOST CHECKPOINT","REDLINE CROSSING","ECHO CHAMBER","HOLLOW SKY","FINAL APPROACH","CHAPTER GATE"];
+    const title=i===0?"THE BREACH":i===1?"LOST FUTURE":i===2?"GRAVITY RIOT":i===3?"BROKEN TIMELINE":i===4?"THE LAST LOOP":i===5?"NEON MAELSTROM":i===6?"VOID RUNNER":i===7?"PARADOX FACTORY":i===8?"CLOCKWORK CARNAGE":i===9?"THE ENDLESS ZERO":chapter.world+" // "+names[beat];
+    return {name:title,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
+  });
+  let levelIndex=Math.max(0,Math.min(99,Number(localStorage.getItem("td-level")||0)));
+  const storyProgress=Math.max(0,Math.min(100,Number(localStorage.getItem("td-story-progress")||0)));
   let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
@@ -210,7 +228,8 @@
     ui.time.textContent=TOTAL.toFixed(1); ui.timeMeter.style.width="100%";
     ui.debt.innerHTML='0.0<span>s</span>'; ui.debtMeter.style.width="0%";
     ui.paid.innerHTML='0.0<span>s</span>'; ui.world.textContent="WORLD FLOW: 1.0×";
-    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(2,"0")+" / "+LEVELS[levelIndex].name;
+    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name;
+    const storyChapter=$("storyChapter"),storyText=$("storyText"),storyProgressText=$("storyProgressText");if(storyChapter)storyChapter.textContent="CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0")+" / "+LEVELS[levelIndex].chapterName;if(storyText)storyText.textContent=LEVELS[levelIndex].story;if(storyProgressText)storyProgressText.textContent="STORY PROGRESS "+storyProgress+" / 100";
     ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
     draw();
@@ -249,11 +268,13 @@
     ui.end.classList.remove("hidden");
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";
     $("endSymbol").textContent=win?"✓":"×";
-    $("endTitle").textContent=win?"You escaped time.":"Debt collected.";
-    $("endCopy").textContent=win?("Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. The future is yours."):reason;
+    $("endTitle").textContent=win?(levelIndex>=99?"The timeline is yours.":"Chapter cleared."):"Debt collected.";
+    $("endCopy").textContent=win?(LEVELS[Math.max(0,levelIndex-1)].story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+(levelIndex>=99?"You have reached the end of the story.":"Next mission unlocked: "+LEVELS[levelIndex].name+".")):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
+      const nextProgress=Math.max(storyProgress,levelIndex+1);localStorage.setItem("td-story-progress",String(nextProgress));
+      if(levelIndex<99){levelIndex=Math.max(levelIndex,Math.min(99,nextProgress));localStorage.setItem("td-level",String(levelIndex));}
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
       unlocked=Math.max(unlocked,3);localStorage.setItem("td-gates",String(unlocked));ui.gates.innerHTML="3 <small>/ 3</small>";
       tone(660,.15,"triangle");setTimeout(()=>tone(880,.22,"triangle"),100);
@@ -361,7 +382,7 @@
     player.trail.forEach(t=>t.a-=dt*1.8);
     cameraX=clamp(player.x- W*.32,0, W*2.25);
     ui.x.textContent=String(Math.round(player.x)).padStart(3,"0");ui.y.textContent=String(Math.round(player.y)).padStart(3,"0");
-    ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(2,"0")+" / "+LEVELS[levelIndex].name+" · "+(chaosEvent>0?chaosLabel:"SECTOR "+String(player.x<1000?1:player.x<2000?2:3).padStart(2,"0"));
+    ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name+" · "+(chaosEvent>0?chaosLabel:"CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0"));
     if(elapsed>=TOTAL)finish(false,"Your reserve reached zero. Time always collects.");
   }
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}

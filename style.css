@@ -499,3 +499,8 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .difficulty-picker select:focus-visible{outline:2px solid var(--cyan)}
 .difficulty-picker option{background:#0c1723;color:#d5fbff}
 @media(max-width:560px){.difficulty-picker{font-size:8px;gap:7px}.difficulty-picker select{padding:8px 22px 8px 9px}}
+
+/* Level and difficulty controls */
+.run-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(100%,430px);margin:0 auto 14px}
+.run-options .difficulty-picker{margin:0;min-width:0}
+@media(max-width:520px){.run-options{grid-template-columns:1fr;gap:8px;width:min(100%,320px)}}

@@ -13,6 +13,7 @@
     <header class="topbar">
       <a class="brand" href="./" aria-label="Time Debt home"><span class="brand-mark">T<span>+</span></span><span class="brand-name">TIME<span>DEBT</span></span></a>
       <div class="top-status"><span class="live-dot"></span><span>TEMPORAL SYSTEM ONLINE</span></div>
+      <button id="pauseBtn" class="icon-btn" aria-label="Pause game" title="Pause game">Ⅱ <span>PAUSE</span></button>
       <button id="soundBtn" class="icon-btn" aria-label="Toggle sound" title="Toggle sound">♫ <span id="soundState">ON</span></button>
     </header>
     <main>
@@ -34,6 +35,7 @@
               <button id="startBtn" class="primary-btn">INITIATE RUN <span>↗</span></button>
               <div class="overlay-note">NO CHECKPOINTS IN THIS TIMELINE</div>
             </div>
+            <div id="pauseScreen" class="overlay hidden"><div class="overlay-kicker">TIMELINE SUSPENDED</div><div class="big-symbol">Ⅱ</div><h2>Take a breath.</h2><p>Your timeline is paused. The clock will wait.</p><button id="resumeBtn" class="primary-btn">RESUME RUN <span>▶</span></button><div class="overlay-note">PRESS P OR ESC TO RESUME</div></div>
             <div id="endScreen" class="overlay hidden">
               <div class="overlay-kicker" id="endKicker">TIMELINE COLLAPSED</div>
               <div class="big-symbol" id="endSymbol">×</div>
@@ -42,6 +44,7 @@
               <button id="retryBtn" class="primary-btn">RETRY TIMELINE <span>↻</span></button>
             </div>
             <div id="toast" class="toast" aria-live="polite"></div>
+            <div class="touch-controls" id="touchControls" aria-label="Touch controls"><button data-control="left" aria-label="Move left">←</button><button data-control="right" aria-label="Move right">→</button><button data-control="jump" aria-label="Jump">↑</button><button data-control="borrow" aria-label="Borrow time">◉</button></div>
             <div class="canvas-bottom"><span>SYS // TD-01</span><span id="worldStatus">WORLD FLOW: 1.0×</span><span>LATENCY: <b id="latency">16</b> MS</span></div>
           </div>
           <div class="game-footer"><span><i class="key-dot"></i> PROCEDURAL WORLD</span><span><i class="key-dot amber"></i> TEMPORAL DEBT ACTIVE</span><span id="runStatus">AWAITING INPUT</span></div>
@@ -66,7 +69,7 @@
           <div class="panel stats-panel">
             <div class="panel-heading"><span>RUN TELEMETRY</span><span class="panel-code">LIVE</span></div>
             <div class="stat-line"><span>BEST TIME</span><strong id="bestValue">—</strong></div>
-            <div class="stat-line"><span>GATES CLEARED</span><strong id="gateValue">0 <small>/ 3</small></strong></div>
+            <div class="stat-line"><span>GATES STABILIZED</span><strong id="gateValue">0 <small>/ 3</small></strong></div>
             <div class="stat-line"><span>DEBT PAID</span><strong id="paidValue">0.0<span>s</span></strong></div>
           </div>
         </aside>

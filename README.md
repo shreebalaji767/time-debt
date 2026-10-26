@@ -28,6 +28,12 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
+## Version 1.5.0
+- Added five selectable levels with escalating hazard density and chaos intensity.
+- Added four difficulty modes: Story, Standard, Paradox, and Nightmare.
+- Introduced timed chaos events: sentinel overdrive, chronoquakes, time storms, and reality glitches.
+- Added level-specific time reserves, extra sentinels, and a persistent level selection.
+
 ## Version 1.4.0
 - Added persistent Story, Standard, and Paradox difficulty modes with distinct time reserves, movement feel, hazard speed, and hit penalties.
 - Paradox sentinels subtly bias their patrols toward the runner when nearby; borrowing time still freezes them.

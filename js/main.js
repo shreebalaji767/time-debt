@@ -17,10 +17,11 @@
   const previewFlow = $("previewFlow");
   const previewSector = document.querySelector(".preview-bottom span:first-child");
   const preview = {
-    time: 0, debt: 0, flow: 1, x: 68, y: 450, vx: 245, vy: 0,
-    grounded: false, jumpLock: 0, cam: 0, shards: 0, gates: 0,
+    time: 0, worldTime: 0, debt: 0, flow: 1, x: 68, y: 450, vx: 245, vy: 0,
+    grounded: false, jumpLock: 0, cam: 0, shards: 0, gates: 0, invuln: 0,
     playerW: 24, playerH: 34, paused: false
   };
+  // Mirror the playable level geometry so the preview teaches the same route.
   const previewPlatforms = [
     {x:0,y:526,w:430,h:74},{x:492,y:526,w:210,h:74},{x:772,y:526,w:270,h:74},
     {x:356,y:420,w:112,h:16},{x:548,y:342,w:105,h:16},{x:710,y:435,w:100,h:16},
@@ -45,7 +46,7 @@
   ].map(s=>({...s,got:false}));
   const previewGates = [{x:1010,y:456},{x:2020,y:456},{x:2930,y:380}].map(g=>({...g,hit:false}));
   function previewReset(){
-    preview.time=0;preview.debt=0;preview.flow=1;preview.x=68;preview.y=450;preview.vy=0;
+    preview.time=0;preview.worldTime=0;preview.debt=0;preview.flow=1;preview.x=68;preview.y=450;preview.vy=0;preview.invuln=0;
     preview.grounded=false;preview.jumpLock=0;preview.cam=0;preview.shards=0;preview.gates=0;
     previewShards.forEach(s=>s.got=false);previewGates.forEach(g=>g.hit=false);
   }
@@ -58,11 +59,14 @@
     if(borrowing){p.debt=Math.min(12,p.debt+dt*1.65);p.flow=.12;}
     else if(p.debt>0){const paid=Math.min(p.debt,dt*2);p.debt-=paid;p.flow=2.05;}
     else p.flow=1;
-    const worldDt=dt*p.flow;
-    for(const h of previewHazards)h.x=h.base+Math.sin(p.time*h.speed+h.phase)*h.range;
-    // A simple autopilot follows the same horizontal speed, gravity and jump impulse as the game.
-    p.x+=245*worldDt;
-    const oldY=p.y;p.vy+=1350*worldDt;p.y+=p.vy*worldDt;p.grounded=false;
+    // Match the playable game's clock: borrowing slows the hazards, not the runner.
+    p.worldTime+=dt*p.flow;
+    for(const h of previewHazards){
+      if(!borrowing)h.x=h.base+Math.sin(p.worldTime*h.speed+h.phase)*h.range;
+    }
+    // The demo runner uses the same movement speed, gravity and jump impulse as gameplay.
+    p.x+=245*dt;
+    const oldY=p.y;p.vy+=1350*dt;p.y+=p.vy*dt;p.grounded=false;
     for(const plat of previewPlatforms){
       if(p.x+p.playerW>plat.x&&p.x<plat.x+plat.w&&oldY+p.playerH<=plat.y+5&&p.y+p.playerH>=plat.y&&p.vy>=0){
         p.y=plat.y-p.playerH;p.vy=0;p.grounded=true;
@@ -81,8 +85,13 @@
     // Collect the same shards and activate the same gates used by the real level.
     for(const s of previewShards)if(!s.got&&p.x+p.playerW>s.x-10&&p.x<s.x+10&&p.y+p.playerH>s.y-10&&p.y<s.y+10){s.got=true;p.shards++;}
     for(let i=0;i<previewGates.length;i++){const g=previewGates[i];if(!g.hit&&p.x+p.playerW>g.x&&p.x<g.x+28&&p.y+p.playerH>g.y-45&&p.y<g.y+48){g.hit=true;p.gates=Math.max(p.gates,i+1);}}
-    // Hazard contact knocks the preview character back, like the live game.
-    for(const h of previewHazards)if(p.x+p.playerW>h.x&&p.x<h.x+h.w&&p.y+p.playerH>h.y&&p.y<h.y+h.h){p.x=Math.max(0,p.x-7);p.vy=-230;}
+    // Match the live game's brief hit immunity and time penalty.
+    p.invuln=Math.max(0,p.invuln-dt);
+    for(const h of previewHazards){
+      if(p.invuln<=0&&p.x+p.playerW>h.x&&p.x<h.x+h.w&&p.y+p.playerH>h.y&&p.y<h.y+h.h){
+        p.invuln=.9;p.vy=-340;p.x=Math.max(0,p.x-12);p.time+=2.5;
+      }
+    }
     if(p.y>680||p.x>3050)previewReset();
     p.cam=clamp(p.x-520,0,2160);
     if(previewFlow)previewFlow.textContent=borrowing?"BORROW 0.12×":p.debt>0?"REPAY 2.05×":"FLOW 1.00×";

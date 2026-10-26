@@ -147,7 +147,7 @@
     return {name:title,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
   });
   let levelIndex=Math.max(0,Math.min(99,Number(localStorage.getItem("td-level")||0)));
-  const storyProgress=Math.max(0,Math.min(100,Number(localStorage.getItem("td-story-progress")||0)));
+  let storyProgress=Math.max(0,Math.min(100,Number(localStorage.getItem("td-story-progress")||0)));\n  if(ui.levelSelect)ui.levelSelect.innerHTML=LEVELS.map((level,i)=>`<option value="${i}">${String(i+1).padStart(3,"0")} · CH ${String(level.chapter+1).padStart(2,"0")} — ${level.name}</option>`).join("");
   let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
@@ -273,7 +273,7 @@
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
-      const nextProgress=Math.max(storyProgress,levelIndex+1);localStorage.setItem("td-story-progress",String(nextProgress));
+      const nextProgress=Math.max(storyProgress,levelIndex+1);storyProgress=nextProgress;localStorage.setItem("td-story-progress",String(nextProgress));const progressNode=$("storyProgressText");if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
       if(levelIndex<99){levelIndex=Math.max(levelIndex,Math.min(99,nextProgress));localStorage.setItem("td-level",String(levelIndex));}
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
       unlocked=Math.max(unlocked,3);localStorage.setItem("td-gates",String(unlocked));ui.gates.innerHTML="3 <small>/ 3</small>";

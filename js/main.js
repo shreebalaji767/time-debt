@@ -165,6 +165,18 @@
     {name:"TIME SURGE",brief:"The world accelerates in pulses. Borrow time tactically, then escape the repayment."},
     {name:"COLLECTOR ELITE",brief:"A reinforced hunter joins the final approach. Survive the sector to open the chapter gate."}
   ];
+  const BOSSES = [
+    {name:"THE REDACTOR",color:"#ff5d70",pattern:"aimed",taunt:"I CAN ERASE YOUR FIRST MEMORY."},
+    {name:"ASH TITAN",color:"#ff874f",pattern:"spread",taunt:"THE FUTURE BURNS IN EVERY DIRECTION."},
+    {name:"GRAVITY WARDEN",color:"#c084fc",pattern:"rain",taunt:"FALL UPWARD. BREAK FOREVER."},
+    {name:"ECHO DOUBLE",color:"#5de7f4",pattern:"double",taunt:"I REMEMBER EVERY MOVE YOU WILL MAKE."},
+    {name:"THE WITNESS",color:"#f8fafc",pattern:"burst",taunt:"YOU WERE THE EXPERIMENT."},
+    {name:"STORM ENGINE",color:"#fbbf24",pattern:"sweep",taunt:"YOUR HEARTBEAT IS MY TARGET."},
+    {name:"VOID DEVOURER",color:"#a78bfa",pattern:"aimed",taunt:"NOTHING SURVIVES THE EMPTY."},
+    {name:"PARADOX SMITH",color:"#fb7185",pattern:"spread",taunt:"EVERY ESCAPE CREATES ANOTHER CAGE."},
+    {name:"CLOCKWORK KING",color:"#34d399",pattern:"double",taunt:"THE MACHINE ALWAYS WINS EVENTUALLY."},
+    {name:"ZERO",color:"#ffffff",pattern:"burst",taunt:"I WAS BUILT TO KEEP YOU ALIVE."}
+  ];
   const LEVELS = Array.from({length:100},(_,i)=>{
     const chapterIndex=Math.floor(i/10), beat=i%10, chapter=CHAPTERS[chapterIndex];
     const names=["FIRST SIGNAL","DEAD AIR","SHATTERED ROUTE","GHOST FREQUENCY","LOST CHECKPOINT","REDLINE CROSSING","ECHO CHAMBER","HOLLOW SKY","FINAL APPROACH","CHAPTER GATE"];
@@ -282,7 +294,7 @@
     difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
     gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;
-    boss=levelIndex%10===9?{x:2760,y:410,w:72,h:88,hp:8,maxHp:8,attackClock:1.2,hitFlash:0,defeated:false,phase:0}:null;bossBolts=[];bossNotice=boss?2.5:0;
+    const bossProfile=BOSSES[Math.floor(levelIndex/10)];const bossHp=7+Math.floor(levelIndex/10);boss=levelIndex%10===9?{...bossProfile,x:2760,y:410,w:72,h:88,hp:bossHp,maxHp:bossHp,attackClock:1.2,hitFlash:0,defeated:false,phase:0,chapter:Math.floor(levelIndex/10)}:null;bossBolts=[];bossNotice=boss?2.5:0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
@@ -475,8 +487,8 @@
     if(boss&&!boss.defeated){
       boss.phase+=dt;boss.hitFlash=Math.max(0,boss.hitFlash-dt);boss.y=405+Math.sin(worldTime*1.7)*22;
       boss.attackClock-=dt*(borrowedNow?.15:1);
-      if(boss.attackClock<=0){boss.attackClock=Math.max(.72,1.55-levelIndex*.004);const dx=player.x+player.w/2-(boss.x+boss.w/2),dy=player.y+player.h/2-(boss.y+boss.h/2),len=Math.max(1,Math.hypot(dx,dy));bossBolts.push({x:boss.x+boss.w/2,y:boss.y+boss.h/2,vx:dx/len*(250+levelIndex*.6),vy:dy/len*(150+levelIndex*.3),r:8,life:4});tone(240,.07,"square",.018);}
-      if(dashTime>0&&player.x+player.w>boss.x&&player.x<boss.x+boss.w&&player.y+player.h>boss.y&&player.y<boss.y+boss.h){boss.hp=Math.max(0,boss.hp-1);boss.hitFlash=.22;player.x+=dashDirection*48;dashTime=0;shake=8;tone(520,.1,"sawtooth",.03);say("PHASE STRIKE // BOSS CORE DAMAGED");if(boss.hp===0){boss.defeated=true;bossBolts=[];elapsed=Math.max(0,elapsed-4);say("COLLECTOR CORE SHATTERED // +4 SEC");tone(880,.25,"triangle",.04);}}
+      if(boss.attackClock<=0){const enraged=boss.hp<=Math.ceil(boss.maxHp/2);boss.attackClock=Math.max(.48,(enraged?.78:1.48)-levelIndex*.003);const ox=boss.x+boss.w/2,oy=boss.y+boss.h/2,dx=player.x+player.w/2-ox,dy=player.y+player.h/2-oy,len=Math.max(1,Math.hypot(dx,dy)),speed=250+levelIndex*.6,shot=(vx,vy)=>bossBolts.push({x:ox,y:oy,vx,vy,r:8,life:4,color:boss.color});if(boss.pattern==="spread"){for(const a of [-.32,0,.32]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="rain"){for(let i=0;i<(enraged?4:2);i++)shot((i-(enraged?1.5:.5))*62,230+levelIndex*.4);}else if(boss.pattern==="double"){for(const a of [-.16,.16]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="burst"){for(let i=0;i<(enraged?10:6);i++){const ang=i*Math.PI*2/(enraged?10:6)+boss.phase;shot(Math.cos(ang)*speed*.8,Math.sin(ang)*speed*.8);}}else if(boss.pattern==="sweep"){for(const a of [-.5,-.25,0,.25,.5]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed*.9,Math.sin(ang)*speed*.9);}}else shot(dx/len*speed,dy/len*speed);tone(240,.07,"square",.018);}
+      if(dashTime>0&&player.x+player.w>boss.x&&player.x<boss.x+boss.w&&player.y+player.h>boss.y&&player.y<boss.y+boss.h){boss.hp=Math.max(0,boss.hp-(boss.hp<=Math.ceil(boss.maxHp/2)?2:1));boss.hitFlash=.22;player.x+=dashDirection*48;dashTime=0;shake=8;tone(520,.1,"sawtooth",.03);say("PHASE STRIKE // BOSS CORE DAMAGED");if(boss.hp===0){boss.defeated=true;bossBolts=[];elapsed=Math.max(0,elapsed-4);say("COLLECTOR CORE SHATTERED // +4 SEC");tone(880,.25,"triangle",.04);}}
     }
     bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty);shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
     ui.time.textContent=left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
@@ -591,10 +603,10 @@
     });
     // Chapter boss arena and the exit beacon.
     if(boss&&!boss.defeated){
-      ctx.save();ctx.translate(boss.x+boss.w/2,boss.y+boss.h/2);const glow=boss.hitFlash>0?"#ffffff":"#ff5d70";ctx.shadowBlur=28;ctx.shadowColor=glow;ctx.fillStyle=glow;ctx.beginPath();ctx.moveTo(0,-boss.h/2);ctx.lineTo(boss.w/2,-10);ctx.lineTo(boss.w/2-8,boss.h/2);ctx.lineTo(-boss.w/2+8,boss.h/2);ctx.lineTo(-boss.w/2,-10);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#101722";ctx.fillRect(-20,-18,40,26);ctx.fillStyle="#ffcf80";ctx.fillRect(-14,-11,8,7);ctx.fillRect(6,-11,8,7);ctx.strokeStyle="#ffd28b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-boss.w/2-10,-boss.h/2+5);ctx.lineTo(-boss.w/2+2,-boss.h/2-12);ctx.moveTo(boss.w/2-2,-boss.h/2-12);ctx.lineTo(boss.w/2+10,-boss.h/2+5);ctx.stroke();ctx.restore();
+      ctx.save();ctx.translate(boss.x+boss.w/2,boss.y+boss.h/2);const glow=boss.hitFlash>0?"#ffffff":boss.color;ctx.shadowBlur=28;ctx.shadowColor=glow;ctx.fillStyle=glow;ctx.beginPath();ctx.moveTo(0,-boss.h/2);ctx.lineTo(boss.w/2,-10);ctx.lineTo(boss.w/2-8,boss.h/2);ctx.lineTo(-boss.w/2+8,boss.h/2);ctx.lineTo(-boss.w/2,-10);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#101722";ctx.fillRect(-20,-18,40,26);ctx.fillStyle="#ffcf80";ctx.fillRect(-14,-11,8,7);ctx.fillRect(6,-11,8,7);ctx.strokeStyle="#ffd28b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-boss.w/2-10,-boss.h/2+5);ctx.lineTo(-boss.w/2+2,-boss.h/2-12);ctx.moveTo(boss.w/2-2,-boss.h/2-12);ctx.lineTo(boss.w/2+10,-boss.h/2+5);ctx.stroke();ctx.restore();
     }
-    bossBolts.forEach(b=>{ctx.save();ctx.shadowBlur=18;ctx.shadowColor="#ffb454";ctx.fillStyle="#ffcf80";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();});
-    if(boss){ctx.save();ctx.fillStyle="#0b121d";ctx.fillRect(W/2-190,48,380,42);ctx.strokeStyle="#ff5d70";ctx.strokeRect(W/2-190,48,380,42);ctx.fillStyle="#ffb454";ctx.font="bold 10px monospace";ctx.textAlign="center";ctx.fillText(boss.defeated?"COLLECTOR CORE // DESTROYED":"CHAPTER BOSS // THE COLLECTOR",W/2,62);ctx.fillStyle="#273344";ctx.fillRect(W/2-174,69,348,9);ctx.fillStyle=boss.defeated?"#5de7f4":"#ff5d70";ctx.fillRect(W/2-174,69,348*(boss.defeated?0:boss.hp/boss.maxHp),9);ctx.textAlign="left";ctx.restore();}
+    bossBolts.forEach(b=>{ctx.save();ctx.shadowBlur=18;ctx.shadowColor=b.color||"#ffb454";ctx.fillStyle=b.color||"#ffcf80";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();});
+    if(boss){ctx.save();ctx.fillStyle="#0b121d";ctx.fillRect(W/2-190,48,380,42);ctx.strokeStyle=boss.color;ctx.strokeRect(W/2-190,48,380,42);ctx.fillStyle=boss.color;ctx.font="bold 10px monospace";ctx.textAlign="center";ctx.fillText(boss.defeated?boss.name+" // DEFEATED":boss.name+" // "+(boss.hp<=Math.ceil(boss.maxHp/2)?"ENRAGED":"CHAPTER BOSS"),W/2,62);ctx.fillStyle="#273344";ctx.fillRect(W/2-174,69,348,9);ctx.fillStyle=boss.defeated?"#5de7f4":boss.color;ctx.fillRect(W/2-174,69,348*(boss.defeated?0:boss.hp/boss.maxHp),9);ctx.textAlign="left";ctx.restore();}
     // Exit beacon.
     const pulse=1+Math.sin(worldTime*4)*.1;
     ctx.save();ctx.translate(2985,410);ctx.scale(pulse,pulse);
@@ -632,7 +644,7 @@
     if(borrowedNow){ctx.fillStyle="#5de7f40b";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#5de7f4";ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.strokeRect(8,8,W-16,H-16);ctx.globalAlpha=1;}
     if(chaosEvent>0){ctx.fillStyle=levelIndex>=2?"#ff416b0b":"#ffb45408";ctx.fillRect(0,0,W,H);ctx.globalAlpha=.8;ctx.fillStyle="#ffb454";ctx.font="bold 12px monospace";ctx.fillText("! "+chaosLabel+" // "+chaosEvent.toFixed(1)+"s",18,30);ctx.globalAlpha=1;}
     if(gameplayMode===7){const px=player?player.x-cameraX:W/2,py=player?player.y+player.h/2:H/2;const fog=ctx.createRadialGradient(px,py,80,px,py,330);fog.addColorStop(0,"#080d16aa");fog.addColorStop(.55,"#080d16e8");fog.addColorStop(1,"#02050bea");ctx.fillStyle=fog;ctx.fillRect(0,0,W,H);ctx.strokeStyle="#5de7f455";ctx.beginPath();ctx.arc(px,py,95+Math.sin(worldTime*2)*8,0,Math.PI*2);ctx.stroke();}
-    if(boss&&!boss.defeated){ctx.fillStyle="#ffb454";ctx.font="bold 11px monospace";ctx.fillText("BOSS CORE // DASH TO STRIKE",18,H-42);}
+    if(boss&&!boss.defeated){ctx.fillStyle=boss.color;ctx.font="bold 11px monospace";ctx.fillText("DASH TO STRIKE // "+boss.name,18,H-42);if(bossNotice>0){ctx.fillStyle="#f3f7fb";ctx.font="bold 10px monospace";ctx.fillText(boss.taunt,18,H-58);}}
     if(gameplayMode===8&&Math.floor(modeClock/2.8)%2===1){ctx.fillStyle="#ffb45412";ctx.fillRect(0,0,W,H);ctx.fillStyle="#ffb454";ctx.font="bold 11px monospace";ctx.fillText("CONTROL INVERSION // COUNTER-STEER",18,H-22);}
     if(gameplayMode===6){ctx.strokeStyle="#ffb45422";for(let i=0;i<8;i++){const yy=70+i*61;ctx.beginPath();ctx.moveTo(mod(worldTime*160+i*117,W),yy);ctx.lineTo(mod(worldTime*160+i*117,W)-65,yy+12);ctx.stroke();}}
     // screen scanlines

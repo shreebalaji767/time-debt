@@ -485,7 +485,7 @@
       // Sweep from the previous frame bottom to the current bottom to catch thin ledges reliably.
       if(player.x+player.w>p.x&&player.x<p.x+p.w&&prevY+player.h<=p.y+4&&player.y+player.h>=p.y&&player.vy>=0){
         player.y=p.y-player.h;player.vy=0;player.ground=true;
-        if(p.fragile&&p.collapse===0)p.collapse=.72;
+        if(p.fragile&&p.collapse===0&&!p.touched){p.collapse=.72;p.touched=true;}
       }
     }
     coyoteTime=player.ground ? .11 : (wasGrounded ? .11 : Math.max(0,coyoteTime-dt));

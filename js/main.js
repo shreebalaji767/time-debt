@@ -10,6 +10,49 @@
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
   };
+  // Independent live preview: a lightweight procedural slice of the game world.
+  const previewCanvas = $("worldPreviewCanvas");
+  const previewCtx = previewCanvas ? previewCanvas.getContext("2d") : null;
+  const previewFlow = $("previewFlow");
+  let previewFrame = 0;
+  function drawWorldPreview(now){
+    if(!previewCanvas || !previewCtx) return;
+    const c=previewCtx,w=previewCanvas.width,h=previewCanvas.height,t=now/1000;
+    c.clearRect(0,0,w,h);
+    const bg=c.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#091321");bg.addColorStop(1,"#071018");c.fillStyle=bg;c.fillRect(0,0,w,h);
+    // Distant orbital glow and a slow-moving celestial ring.
+    const glow=c.createRadialGradient(w*.62,h*.35,2,w*.62,h*.35,125);glow.addColorStop(0,"#174b5a55");glow.addColorStop(1,"#07101800");c.fillStyle=glow;c.fillRect(0,0,w,h);
+    c.save();c.translate(w*.62,h*.35);c.rotate(t*.12);c.strokeStyle="#5de7f433";c.lineWidth=1;
+    c.beginPath();c.ellipse(0,0,72,19,-.2,0,Math.PI*2);c.stroke();c.beginPath();c.ellipse(0,0,94,27,-.2,0,Math.PI*2);c.stroke();
+    c.beginPath();c.arc(0,0,22,0,Math.PI*2);c.stroke();c.restore();
+    for(let i=0;i<85;i++){const x=mod(i*127.7-t*10,w),y=mod(i*41.3,h);c.globalAlpha=.2+(Math.sin(t*1.4+i)*.15+.15);c.fillStyle=i%6===0?"#ffb454":"#9aeaf2";c.fillRect(x,y,i%8===0?2:1,1);}
+    c.globalAlpha=1;
+    // Grid and skyline drift independently from the main game loop.
+    c.strokeStyle="#183044";c.lineWidth=1;
+    for(let x=-mod(t*13,36);x<w;x+=36){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+    for(let y=22;y<h;y+=22){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+    for(let i=0;i<22;i++){const x=mod(i*61-t*7,w+60)-30,bh=18+mod(i*23,46);c.fillStyle="#0a1421";c.fillRect(x,h-30-bh,20+mod(i*11,26),bh);c.fillStyle="#1b3948";c.fillRect(x,h-30-bh,20+mod(i*11,26),1);}
+    // Moving platforms, hazard sentinels, and chrono shards.
+    const offset=(t*37)%w;
+    const plats=[{x:45,y:h-44,w:175},{x:275,y:h-78,w:115},{x:440,y:h-52,w:150},{x:660,y:h-88,w:110},{x:820,y:h-43,w:125}];
+    c.save();c.translate(-offset*.32,0);
+    for(let k=-1;k<2;k++)for(const p of plats){const x=p.x+k*w;c.fillStyle="#122638";c.fillRect(x,p.y,p.w,22);c.fillStyle="#5de7f4";c.shadowBlur=10;c.shadowColor="#5de7f4";c.fillRect(x,p.y,p.w,2);c.shadowBlur=0;c.fillStyle="#203d50";c.fillRect(x+8,p.y+8,p.w-16,1);}
+    c.restore();
+    const hazardX=mod(t*48,w-40)+20,hazardY=h-57+Math.sin(t*2.4)*10;
+    c.save();c.translate(hazardX,hazardY);c.rotate(t*1.3);c.shadowBlur=14;c.shadowColor="#ff5d70";c.fillStyle="#ff5d70";c.fillRect(-7,-7,14,14);c.shadowBlur=0;c.fillStyle="#24131d";c.fillRect(-3,-3,6,6);c.restore();
+    for(let i=0;i<3;i++){const sx=mod(150+i*290-t*18,w),sy=h-95+Math.sin(t*2+i)*7;c.save();c.translate(sx,sy);c.rotate(t+i);c.shadowBlur=13;c.shadowColor="#5de7f4";c.fillStyle="#c9fbff";c.beginPath();c.moveTo(0,-6);c.lineTo(5,0);c.lineTo(0,6);c.lineTo(-5,0);c.closePath();c.fill();c.restore();}
+    // Player hops between platforms in a seamless looping preview.
+    const px=mod(t*54,w-40)+12,phase=(t*1.6)%1,py=h-54-Math.sin(phase*Math.PI)*28;
+    c.fillStyle="#5de7f444";c.fillRect(px-5,py+20,20,3);
+    c.shadowBlur=14;c.shadowColor="#5de7f4";c.fillStyle="#d5fbff";c.fillRect(px,py,11,20);c.shadowBlur=0;c.fillStyle="#0b1826";c.fillRect(px+6,py+4,3,3);c.fillStyle="#5de7f4";c.fillRect(px+2,py+16,7,2);
+    // Exit gate pulses at the far edge.
+    const gx=w-35,gy=h-68,pulse=1+Math.sin(t*3)*.08;c.save();c.translate(gx,gy);c.scale(pulse,pulse);c.strokeStyle="#5de7f4";c.lineWidth=2;c.shadowBlur=13;c.shadowColor="#5de7f4";c.strokeRect(-9,-20,18,25);c.beginPath();c.arc(0,-8,5,0,Math.PI*2);c.stroke();c.restore();
+    c.fillStyle="#5de7f4";c.fillRect(0,h-2,w,2);
+    if(previewFlow)previewFlow.textContent="FLOW "+(1+Math.sin(t*.5)*.08).toFixed(1)+"×";
+    previewFrame=requestAnimationFrame(drawWorldPreview);
+  }
+  if(previewCtx) previewFrame=requestAnimationFrame(drawWorldPreview);
+
   const W = 960, H = 600, FLOOR = 526, TOTAL = 45;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;

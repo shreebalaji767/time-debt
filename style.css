@@ -102,3 +102,116 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
  canvas{aspect-ratio:16/9}
  .touch-controls{bottom:28px}
 }
+
+
+/* Refined cinematic landing page */
+#landingIntro{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-height:clamp(300px,36vw,440px);
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  margin:22px 0 28px;
+  padding:clamp(28px,5vw,66px);
+  border:1px solid #263448;
+  background:
+    radial-gradient(ellipse at 78% 45%,#12334255 0%,transparent 34%),
+    linear-gradient(112deg,#0d1420f5 0%,#0a101af2 55%,#0c1721f2 100%);
+  box-shadow:0 28px 90px #0004,inset 0 1px #ffffff08;
+}
+#landingIntro::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  opacity:.24;
+  background-image:linear-gradient(#3c566c22 1px,transparent 1px),linear-gradient(90deg,#3c566c22 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(90deg,transparent 12%,#000 100%);
+  pointer-events:none;
+}
+#landingIntro::after{
+  content:"TD / 01";
+  position:absolute;
+  right:clamp(20px,5vw,64px);
+  top:50%;
+  transform:translateY(-50%);
+  width:clamp(150px,23vw,300px);
+  height:clamp(150px,23vw,300px);
+  display:grid;
+  place-items:center;
+  border:1px solid #5de7f422;
+  border-radius:50%;
+  color:#5de7f40b;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:clamp(34px,6vw,76px);
+  font-weight:900;
+  letter-spacing:-.08em;
+  box-shadow:0 0 0 18px #5de7f408,0 0 0 42px #5de7f405,inset 0 0 70px #5de7f408;
+  pointer-events:none;
+}
+#landingIntro .eyebrow{position:relative;z-index:1;display:flex;align-items:center;gap:8px}
+#landingIntro h1{
+  position:relative;
+  z-index:1;
+  max-width:760px;
+  margin:24px 0 18px;
+  font-size:clamp(42px,7vw,88px);
+  line-height:.96;
+  letter-spacing:-.075em;
+  text-wrap:balance;
+  text-shadow:0 8px 42px #0006;
+}
+#landingIntro h1 em{
+  color:var(--cyan);
+  text-shadow:0 0 34px #5de7f422;
+}
+#landingIntro .intro-copy{
+  position:relative;
+  z-index:1;
+  max-width:430px;
+  color:#a1b0c3;
+  font-size:clamp(12px,1.2vw,14px);
+  line-height:1.8;
+}
+#landingIntro .landing-actions{position:relative;z-index:1;margin-top:30px;gap:20px}
+#landingIntro .primary-btn{
+  min-width:190px;
+  min-height:54px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:30px;
+  padding:0 20px;
+  background:var(--cyan);
+  box-shadow:0 0 0 1px #b3f8ff44,0 10px 35px #5de7f41b;
+}
+#landingIntro .primary-btn:hover{box-shadow:0 0 0 1px #b3f8ff88,0 12px 38px #5de7f433}
+#landingIntro .landing-hint{max-width:180px;letter-spacing:.09em;line-height:1.8}
+#landingIntro .eyebrow::after{
+  content:"";
+  display:inline-block;
+  width:34px;
+  height:1px;
+  margin-left:6px;
+  background:linear-gradient(90deg,var(--cyan),transparent);
+}
+.bottom-strip{position:relative}
+.bottom-strip::before{content:"HOW TO SURVIVE";position:absolute;top:10px;left:0;transform:translateY(-100%);color:#4f6278;font-size:8px;letter-spacing:.2em}
+@media(max-width:700px){
+  #landingIntro{min-height:330px;margin:16px 0 24px;padding:28px 22px}
+  #landingIntro::after{right:-38px;top:27%;width:150px;height:150px;font-size:35px;opacity:.7}
+  #landingIntro h1{font-size:clamp(42px,10vw,64px);margin:24px 0 14px}
+  #landingIntro .intro-copy{max-width:290px}
+  #landingIntro .landing-actions{align-items:flex-start;gap:12px;margin-top:24px}
+  #landingIntro .primary-btn{min-width:175px;min-height:50px}
+}
+@media(max-width:380px){
+  #landingIntro{padding:24px 17px}
+  #landingIntro h1{font-size:39px}
+  #landingIntro .landing-hint{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){#landingIntro .primary-btn{transition:none}}

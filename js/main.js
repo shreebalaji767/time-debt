@@ -4,7 +4,7 @@
   const ctx = canvas.getContext("2d", { alpha: false });
   const $ = id => document.getElementById(id);
   const ui = {
-    start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), pauseBtn: $("pauseBtn"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
+    start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), pauseBtn: $("pauseBtn"), exitBtn: $("exitBtn"), landingPlayBtn: $("landingPlayBtn"), gameLayout: $("gameLayout"), landingIntro: $("landingIntro"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
     time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
     best: $("bestValue"), gates: $("gateValue"), paid: $("paidValue"), level: $("levelLabel"),
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
@@ -78,6 +78,19 @@
     ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
     draw();
+  }
+  function showGame(){
+    ui.gameLayout.classList.remove("is-hidden");
+    ui.pauseBtn.classList.remove("hidden"); ui.exitBtn.classList.remove("hidden");
+    ui.landingIntro.classList.add("game-intro");
+    ui.gameLayout.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function exitGame(){
+    running=false; paused=false; ended=false; keys=Object.create(null);
+    ui.gameLayout.classList.add("is-hidden");
+    ui.pauseBtn.classList.add("hidden"); ui.exitBtn.classList.add("hidden");
+    ui.landingIntro.classList.remove("game-intro");
+    reset(); window.scrollTo({top:0,behavior:"smooth"});
   }
   function start(){
     if(running)return;
@@ -250,7 +263,7 @@
     if(["ArrowLeft","ArrowRight","ArrowUp","Space","ShiftLeft","ShiftRight"].includes(code))e.preventDefault();
     keys[code]=true;
     if((code==="Space"||code==="ArrowUp"||code==="KeyW")&&!e.repeat)jump();
-    if(code==="Enter"&&!running)start();
+    if(code==="Enter"&&!running&&!ui.gameLayout.classList.contains("is-hidden"))start();
     if((code==="KeyP"||code==="Escape")&&running&&!ended){setPaused(!paused);return;}
     if(code==="KeyR"&&ended)start();
   });
@@ -267,6 +280,8 @@
   });
   canvas.addEventListener("pointerup",e=>{if(touchX===e.pointerId){keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;}});
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
+  ui.landingPlayBtn.addEventListener("click",()=>{showGame();});
+  ui.exitBtn.addEventListener("click",exitGame);
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));
   document.querySelectorAll("[data-control]").forEach(button=>{

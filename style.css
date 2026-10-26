@@ -571,3 +571,8 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .messenger .chat-compose>span:first-child,.messenger .chat-compose>span:nth-child(2){display:none}
 @media(max-width:520px){.messenger .chat-thread{max-height:clamp(260px,44vh,360px);min-height:220px}.messenger .chat-message{max-width:98%;padding:9px 10px}.messenger .chat-message p{font-size:9px;line-height:1.75}.messenger .chat-compose{font-size:6px;letter-spacing:.07em}}
 @media(prefers-reduced-motion:reduce){.messenger .chat-thread{scroll-behavior:auto}}
+
+
+/* Mission-specific gameplay briefing */
+#levelLabel{max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.messenger .chat-message:first-of-type{border-left:2px solid #ffb454;background:#182333}

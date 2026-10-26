@@ -59,3 +59,12 @@ footer{display:flex;justify-content:space-between;gap:15px;padding:18px 0 24px;c
 @media(max-width:900px){.game-layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr}.time-panel{grid-row:span 2}.stats-panel{margin-top:0}.bottom-strip{grid-template-columns:repeat(2,1fr)}.strip-note{justify-self:start}}
 @media(max-width:560px){.app-shell{padding:0 12px}.topbar{height:62px}.top-status{font-size:8px;letter-spacing:.04em}.brand-name{font-size:11px}.intro{padding:27px 0 20px}.intro-copy{font-size:10px}.frame-top{font-size:8px;padding:0 7px}.frame-coords{display:none}.game-footer{font-size:7px;padding:0 7px}.sidebar{grid-template-columns:1fr}.time-panel{grid-row:auto}.stats-panel{margin-top:0}.panel{padding:15px}.bottom-strip{gap:17px;padding:23px 0}.strip-note{font-size:8px}footer{flex-wrap:wrap;font-size:7px}footer span:nth-child(2){order:3;width:100%}.overlay p{max-width:250px;line-height:1.6}.time-value strong{font-size:42px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+/* Upgrade: pause and accessible touch controls */
+#pauseBtn{margin-left:auto;margin-right:8px}
+.topbar{gap:10px}
+.touch-controls{position:absolute;inset:auto 12px 35px;display:none;align-items:end;justify-content:space-between;gap:8px;z-index:3;pointer-events:none}
+.touch-controls button{pointer-events:auto;width:44px;height:44px;border:1px solid #5de7f477;background:#0b1826cc;color:var(--cyan);font-size:20px;touch-action:none;user-select:none;backdrop-filter:blur(5px)}
+.touch-controls button[data-control="borrow"]{border-color:#ffb45499;color:var(--amber);border-radius:50%;width:52px;height:52px}
+.touch-controls button:active,.touch-controls button.is-active{background:#5de7f433;transform:scale(.96)}
+@media(pointer:coarse){.touch-controls{display:flex}.canvas-bottom{bottom:0;padding-bottom:8px}.game-footer{font-size:7px}}
+@media(max-width:560px){#pauseBtn{padding:8px 9px;margin-right:0}#pauseBtn span{display:none}.topbar{gap:6px}.touch-controls{inset:auto 10px 34px;gap:6px}.touch-controls button{width:40px;height:40px}.touch-controls button[data-control="borrow"]{width:48px;height:48px}}

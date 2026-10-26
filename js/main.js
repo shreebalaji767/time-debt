@@ -223,7 +223,7 @@
     ctx.restore();
   }
   function loop(now){
-    if(!running)return;
+    if(!running||paused)return;
     const dt=Math.min((now-last)/1000,.033);last=now;
     update(dt);draw();
     fpsFrames++;fpsTime+=dt;if(fpsTime>=.5){ui.latency.textContent=String(Math.round(fpsTime*1000/fpsFrames)).padStart(2,"0");fpsFrames=0;fpsTime=0;}
@@ -235,6 +235,7 @@
     keys[code]=true;
     if((code==="Space"||code==="ArrowUp"||code==="KeyW")&&!e.repeat)jump();
     if(code==="Enter"&&!running)start();
+    if((code==="KeyP"||code==="Escape")&&running&&!ended){setPaused(!paused);return;}
     if(code==="KeyR"&&ended)start();
   });
   window.addEventListener("keyup",e=>{keys[e.code]=false;});

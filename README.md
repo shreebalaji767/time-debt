@@ -28,6 +28,12 @@ The repository is a static site. In GitHub, open **Settings → Pages** and choo
 
 No API keys, server-side code, database, assets folder, package manager, or build process are required.
 
+## Version 1.4.0
+- Added persistent Story, Standard, and Paradox difficulty modes with distinct time reserves, movement feel, hazard speed, and hit penalties.
+- Paradox sentinels subtly bias their patrols toward the runner when nearby; borrowing time still freezes them.
+- Added jump buffering and coyote time so early jump presses and jumps just after leaving a ledge feel more reliable.
+- Improved platform landing detection with a swept vertical crossing check to reduce missed landings on thin platforms.
+
 ## Version 1.3.0
 - Added gameplay checkpoints at stabilized gates, with safe respawn positions after a fall.
 - Falling after a checkpoint costs five seconds instead of immediately ending the run.

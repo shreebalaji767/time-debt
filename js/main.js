@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const ui = {
     start: $("startScreen"), end: $("endScreen"), pause: $("pauseScreen"), logoLink: $("logoLink"), pauseBtn: $("pauseBtn"), exitBtn: $("exitBtn"), landingPlayBtn: $("landingPlayBtn"), gameLayout: $("gameLayout"), landingIntro: $("landingIntro"), resumeBtn: $("resumeBtn"), startBtn: $("startBtn"), retryBtn: $("retryBtn"),
-    difficulty: $("difficultySelect"), time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
+    difficulty: $("difficultySelect"), levelSelect: $("levelSelect"), time: $("timeValue"), timeMeter: $("timeMeter"), debt: $("debtValue"), debtMeter: $("debtMeter"),
     best: $("bestValue"), gates: $("gateValue"), shards: $("shardValue"), runs: $("runsValue"), paid: $("paidValue"), level: $("levelLabel"),
     x: $("coordX"), y: $("coordY"), world: $("worldStatus"), latency: $("latency"),
     run: $("runStatus"), toast: $("toast"), sound: $("soundBtn"), soundState: $("soundState")
@@ -127,10 +127,12 @@
 
   const W = 960, H = 600, FLOOR = 526, BASE_TOTAL = 45;
   let TOTAL = BASE_TOTAL;
-  const DIFFICULTIES = {story:{label:"STORY",time:55,speed:.78,gravity:1220,jump:625,hazard:.72,penalty:1.5,hunt:0},standard:{label:"STANDARD",time:45,speed:1,gravity:1350,jump:590,hazard:1,penalty:2.5,hunt:.12},paradox:{label:"PARADOX",time:40,speed:1.08,gravity:1450,jump:605,hazard:1.42,penalty:3.5,hunt:.32}};
+  const DIFFICULTIES = {story:{label:"STORY",time:60,speed:.82,gravity:1200,jump:630,hazard:.7,penalty:1.2,hunt:0,chaos:0},standard:{label:"STANDARD",time:45,speed:1,gravity:1350,jump:590,hazard:1,penalty:2.5,hunt:.12,chaos:.25},paradox:{label:"PARADOX",time:40,speed:1.08,gravity:1450,jump:605,hazard:1.42,penalty:3.5,hunt:.32,chaos:.65,extra:1},nightmare:{label:"NIGHTMARE",time:35,speed:1.13,gravity:1510,jump:615,hazard:1.65,penalty:4,hunt:.42,chaos:1,extra:2}};
+  const LEVELS = [{name:"THE BREACH",time:0,hazard:1,chaos:1},{name:"LOST FUTURE",time:2,hazard:1.15,chaos:1.25},{name:"GRAVITY RIOT",time:1,hazard:1.3,chaos:1.7},{name:"BROKEN TIMELINE",time:0,hazard:1.48,chaos:2.1},{name:"THE LAST LOOP",time:-3,hazard:1.7,chaos:2.6}];
+  let levelIndex=Math.max(0,Math.min(4,Number(localStorage.getItem("td-level")||0)));
   let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
-  let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0;
+  let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
@@ -173,11 +175,12 @@
     clearTimeout(toastTimer); toastTimer=setTimeout(()=>ui.toast.classList.remove("show"),1500);
   }
   function reset(){
-    difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];TOTAL=difficulty.time;
+    difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
+    if(ui.difficulty)ui.difficulty.value=difficultyKey;if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
       {x:0,y:FLOOR,w:430,h:74},{x:492,y:FLOOR,w:210,h:74},{x:772,y:FLOOR,w:270,h:74},
@@ -197,14 +200,17 @@
       {x:2225,y:FLOOR-20,w:34,h:20,base:0,range:75,speed:1.6,phase:1.4},
       {x:2620,y:278,w:25,h:30,base:0,range:60,speed:1.7,phase:3}
     ];
-    hazards.forEach(h=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.speed*=difficulty.hazard;h.range*=difficulty.hazard>1?1.12:1;});
+    hazards.forEach(h=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;});
+    const extraByLevel=[0,1,2,3,4][levelIndex]+(difficulty.extra||0);
+    const extraSpawns=[{x:475,y:488,w:28,h:22,range:55,speed:1.7,phase:.8},{x:990,y:330,w:22,h:32,range:75,speed:1.9,phase:2.1},{x:1370,y:360,w:30,h:20,range:90,speed:2.1,phase:1.1},{x:1960,y:330,w:22,h:32,range:72,speed:2.2,phase:2.7},{x:2460,y:355,w:30,h:20,range:88,speed:2.3,phase:1.9},{x:2850,y:405,w:26,h:28,range:64,speed:2.4,phase:.3}];
+    for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x};h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
     gates=[{x:1010,y:456,hit:false},{x:2020,y:456,hit:false},{x:2930,y:380,hit:false}];
     shards=[{x:390,y:382,got:false},{x:640,y:304,got:false},{x:875,y:390,got:false},{x:1195,y:390,got:false},{x:1550,y:288,got:false},{x:1840,y:382,got:false},{x:2415,y:350,got:false},{x:2665,y:280,got:false}];
     motes=Array.from({length:110},()=>({x:rand(0,3100),y:rand(25,520),r:rand(.5,2),p:rand(0,6.28),s:rand(.15,.8)}));
     ui.time.textContent=TOTAL.toFixed(1); ui.timeMeter.style.width="100%";
     ui.debt.innerHTML='0.0<span>s</span>'; ui.debtMeter.style.width="0%";
     ui.paid.innerHTML='0.0<span>s</span>'; ui.world.textContent="WORLD FLOW: 1.0×";
-    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="SECTOR 01 / THE BREACH";
+    ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(2,"0")+" / "+LEVELS[levelIndex].name;
     ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
     draw();
@@ -268,6 +274,12 @@
     if(!running)reset();
     say(difficulty.label+" MODE SELECTED");
   }
+  function chooseLevel(value){
+    const n=Number(value);if(!Number.isInteger(n)||n<0||n>=LEVELS.length)return;
+    levelIndex=n;localStorage.setItem("td-level",String(n));
+    if(!running)reset();
+    say("LEVEL "+(n+1)+" // "+LEVELS[n].name);
+  }
   function borrow(){return running&&!ended&&(keys.KeyE||keys.ShiftLeft||keys.ShiftRight||keys[" " + "Borrow"]);}
   function update(dt){
     if(ended)return;
@@ -276,10 +288,15 @@
     if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
+    chaosClock+=dt;
+    const eventEvery=Math.max(4.2,8.5/(LEVELS[levelIndex].chaos*difficulty.chaos+0.25));
+    if(chaosClock>=eventEvery){chaosClock=0;chaosEvent=1.4+Math.random()*1.4;const events=["SENTINEL OVERDRIVE","CHRONOQUAKE","TIME STORM","REALITY GLITCH"];chaosLabel=events[Math.floor(Math.random()*events.length)];say("CHAOS EVENT // "+chaosLabel);shake=Math.max(shake,5+levelIndex*2);tone(145,.12,"sawtooth",.025);}
+    chaosEvent=Math.max(0,chaosEvent-dt);
     let flow=1;
     if(borrowedNow){debt=Math.min(12,debt+dt*1.65);flow=.12;if(!wasBorrow){say("TIME BORROWED // HAZARDS FROZEN");tone(180,.16,"sine");}}
-    else if(debt>0){const due=Math.min(debt,dt*2);debt-=due;paid+=due;flow=2.05;if(wasBorrow){say("DEBT COLLECTOR ACTIVE // 2.05×");tone(360,.1,"sawtooth",.025);}}
+    else if(debt>0){const due=Math.min(debt,dt*2.2);debt-=due;paid+=due;flow=2.05;if(wasBorrow){say("DEBT COLLECTOR ACTIVE // 2.05×");tone(360,.1,"sawtooth",.025);}}
     else flow=1;
+    if(chaosEvent>0&&!borrowedNow){flow*=1+0.28*LEVELS[levelIndex].chaos*difficulty.chaos;worldTime+=dt*2.5;}
     worldTime+=dt*flow;
     const left=TOTAL-elapsed;
     ui.time.textContent=left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
@@ -309,7 +326,8 @@
     }
     for(const h of hazards){
       if(!borrowedNow){
-        const patrol=h.base+Math.sin(worldTime*h.speed+h.phase)*h.range;
+        const chaosBoost=chaosEvent>0?1.75:1;
+        const patrol=h.base+Math.sin(worldTime*h.speed*chaosBoost+h.phase)*h.range;
         const distance=player.x-(h.base+h.w/2);
         const alertRange=difficultyKey==="paradox"?430:300;
         const targetBias=Math.abs(distance)<alertRange?clamp(distance/alertRange,-1,1)*difficulty.hunt*55:0;
@@ -343,7 +361,7 @@
     player.trail.forEach(t=>t.a-=dt*1.8);
     cameraX=clamp(player.x- W*.32,0, W*2.25);
     ui.x.textContent=String(Math.round(player.x)).padStart(3,"0");ui.y.textContent=String(Math.round(player.y)).padStart(3,"0");
-    ui.level.textContent=player.x<1000?"SECTOR 01 / THE BREACH":player.x<2000?"SECTOR 02 / LOST FUTURE":"SECTOR 03 / LAST CHANCE";
+    ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(2,"0")+" / "+LEVELS[levelIndex].name+" · "+(chaosEvent>0?chaosLabel:"SECTOR "+String(player.x<1000?1:player.x<2000?2:3).padStart(2,"0"));
     if(elapsed>=TOTAL)finish(false,"Your reserve reached zero. Time always collects.");
   }
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
@@ -411,6 +429,7 @@
     ctx.restore();
     // HUD overlays on canvas
     if(borrowedNow){ctx.fillStyle="#5de7f40b";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#5de7f4";ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.strokeRect(8,8,W-16,H-16);ctx.globalAlpha=1;}
+    if(chaosEvent>0){ctx.fillStyle=levelIndex>=2?"#ff416b0b":"#ffb45408";ctx.fillRect(0,0,W,H);ctx.globalAlpha=.8;ctx.fillStyle="#ffb454";ctx.font="bold 12px monospace";ctx.fillText("! "+chaosLabel+" // "+chaosEvent.toFixed(1)+"s",18,30);ctx.globalAlpha=1;}
     // screen scanlines
     ctx.fillStyle="#d6f7ff06";for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,1);
     if(shake>0){shake=Math.max(0,shake-.7);}
@@ -448,6 +467,7 @@
   ui.logoLink.addEventListener("click",e=>{e.preventDefault();if(!ui.gameLayout.classList.contains("is-hidden"))exitGame();else window.scrollTo({top:0,behavior:"smooth"});});
   ui.landingPlayBtn.addEventListener("click",()=>{showGame();start();});
   if(ui.difficulty)ui.difficulty.addEventListener("change",e=>chooseDifficulty(e.target.value));
+  if(ui.levelSelect)ui.levelSelect.addEventListener("change",e=>chooseLevel(e.target.value));
   ui.exitBtn.addEventListener("click",exitGame);
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));

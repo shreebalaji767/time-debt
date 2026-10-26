@@ -83,7 +83,15 @@
     reset(); running=true; paused=false; ui.start.classList.add("hidden"); ui.run.textContent="TIMELINE ACTIVE";
     last=performance.now(); tone(520,.12,"triangle"); requestAnimationFrame(loop);
   }
-  function setPaused(value){\n    if(!running||ended)return;\n    paused=Boolean(value);ui.pause.classList.toggle("hidden",!paused);ui.pauseBtn.innerHTML=paused?"▶ <span>RESUME</span>":"Ⅱ <span>PAUSE</span>";\n    ui.run.textContent=paused?"TIMELINE PAUSED":"TIMELINE ACTIVE";\n    if(!paused){last=performance.now();requestAnimationFrame(loop);}\n  }\n  function finish(win,reason){
+  function setPaused(value){
+    if(!running||ended)return;
+    paused=Boolean(value);
+    ui.pause.classList.toggle("hidden",!paused);
+    ui.pauseBtn.innerHTML=paused?"▶ <span>RESUME</span>":"Ⅱ <span>PAUSE</span>";
+    ui.run.textContent=paused?"TIMELINE PAUSED":"TIMELINE ACTIVE";
+    if(!paused){last=performance.now();requestAnimationFrame(loop);}
+  }
+  function finish(win,reason){
     if(ended)return; ended=true; running=false;
     ui.end.classList.remove("hidden");
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";

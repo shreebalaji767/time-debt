@@ -206,14 +206,17 @@
     ui.gameLayout.classList.remove("is-hidden");
     ui.pauseBtn.classList.remove("hidden"); ui.exitBtn.classList.remove("hidden");
     ui.landingIntro.classList.add("game-intro");
-    ui.gameLayout.scrollIntoView({behavior:"smooth",block:"start"});
+    // Stop the decorative autoplay simulation while the real game is active.
+    if(preview.frame)cancelAnimationFrame(preview.frame);
+    ui.gameLayout.scrollIntoView({behavior:"auto",block:"start"});
   }
   function exitGame(){
     running=false; paused=false; ended=false; keys=Object.create(null);
     ui.gameLayout.classList.add("is-hidden");
     ui.pauseBtn.classList.add("hidden"); ui.exitBtn.classList.add("hidden");
     ui.landingIntro.classList.remove("game-intro");
-    reset(); window.scrollTo({top:0,behavior:"smooth"});
+    reset(); window.scrollTo({top:0,behavior:"auto"});
+    if(previewCtx&&!preview.frame)preview.frame=requestAnimationFrame(drawWorldPreview);
   }
   function start(){
     if(running)return;

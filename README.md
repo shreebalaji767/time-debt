@@ -85,3 +85,9 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Ten distinct gameplay variants run through each chapter: precision running, low gravity, heavy gravity, moving platforms, collapsing ledges, vertical sentinels, crosswind, blackout visibility, control inversion/time surges, and an elite collector encounter.
 - The selected mission's gameplay rules are announced in the message-box briefing and HUD.
 - The game remains a dependency-free static HTML/CSS/JavaScript project with local progress saves.
+
+
+## Version 2.5.0 — Phase Dash
+- Added a quick phase-dash burst on **X** with a 1.15-second cooldown and a short invulnerability window to help evade hazards.
+- Added dash trail effects, sound and status feedback, touch-screen dash button, and a field-manual entry.
+- Dash state resets cleanly when a mission is reset. The 100-mission continuous campaign and existing progress saves are preserved.

@@ -170,12 +170,15 @@
   const mod = (n,m) => ((n%m)+m)%m;
 
   function resize(){
-    const rect = canvas.getBoundingClientRect();
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(1, Math.round(rect.width*dpr));
-    canvas.height = Math.max(1, Math.round(rect.width*(H/W)*dpr));
+    // Hidden canvases report zero width. Use a safe logical width until the game
+    // shell is visible, then resize again immediately when Play is pressed.
+    const rect=canvas.getBoundingClientRect();
+    const cssWidth=rect.width||Math.max(320,Math.min(window.innerWidth-24,960));
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.max(1,Math.round(cssWidth*dpr));
+    canvas.height=Math.max(1,Math.round(cssWidth*(H/W)*dpr));
     ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
-    draw();
+    if(platforms&&player)draw();
   }
   function tone(freq=440,duration=.08,type="sine",volume=.035){
     if(!soundOn) return;
@@ -252,9 +255,35 @@
     if(previewCtx&&!preview.frame)preview.frame=requestAnimationFrame(drawWorldPreview);
   }
   function start(){
-    if(running)return;
-    reset(); running=true; paused=false; ui.start.classList.add("hidden"); ui.run.textContent="TIMELINE ACTIVE";
-    last=performance.now(); tone(520,.12,"triangle"); requestAnimationFrame(loop);
+    // Always reveal the game shell before initialization so a Play click can never
+    // leave the visitor on an empty landing area.
+    try{
+      showGame();
+      if(running){if(paused)setPaused(false);return;}
+      if(!canvas || !ctx)throw new Error("The game canvas is unavailable.");
+      resize();
+      reset();
+      ui.start.classList.add("hidden");
+      ui.pause.classList.add("hidden");
+      ui.end.classList.add("hidden");
+      running=true;paused=false;ended=false;
+      ui.run.textContent="TIMELINE ACTIVE";
+      last=performance.now();
+      draw();
+      tone(520,.12,"triangle");
+      requestAnimationFrame(loop);
+    }catch(error){
+      running=false;paused=false;
+      ui.start.classList.remove("hidden");
+      ui.end.classList.add("hidden");
+      ui.pause.classList.add("hidden");
+      const heading=ui.start.querySelector("h2"),copy=ui.start.querySelector("p"),kicker=ui.start.querySelector(".overlay-kicker");
+      if(heading)heading.textContent="Timeline initialization failed.";
+      if(copy)copy.textContent="The game could not start cleanly. Your page is still available; reload and try again. "+(error&&error.message?error.message:"");
+      if(kicker)kicker.textContent="RECOVERY MODE";
+      ui.run.textContent="READY TO RETRY";
+      try{draw();}catch(_){}
+    }
   }
   function setPaused(value){
     if(!running||ended)return;
@@ -487,7 +516,7 @@
   canvas.addEventListener("pointerup",e=>{if(touchX===e.pointerId){keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;}});
   canvas.addEventListener("pointercancel",()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchX=null;});
   ui.logoLink.addEventListener("click",e=>{e.preventDefault();if(!ui.gameLayout.classList.contains("is-hidden"))exitGame();else window.scrollTo({top:0,behavior:"smooth"});});
-  ui.landingPlayBtn.addEventListener("click",()=>{showGame();start();});
+  ui.landingPlayBtn.addEventListener("click",start);
   if(ui.difficulty)ui.difficulty.addEventListener("change",e=>chooseDifficulty(e.target.value));
   if(ui.levelSelect)ui.levelSelect.addEventListener("change",e=>chooseLevel(e.target.value));
   ui.exitBtn.addEventListener("click",exitGame);

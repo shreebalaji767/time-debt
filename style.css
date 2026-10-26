@@ -463,3 +463,22 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){
   .frame-top>span:first-child .tiny-square,#timeMeter::after,#debtMeter::after,#toast.show{animation:none}
 }
+
+
+/* Release 1.1 — expanded telemetry and clearer state feedback */
+.stats-panel .stat-line{gap:12px}
+.stats-panel .stat-line>span{letter-spacing:.045em}
+#shardValue{color:var(--cyan)}
+#runsValue{color:#b9c9d9;font-variant-numeric:tabular-nums}
+#shardValue small{color:#63758b;font-size:10px}
+#timeValue{font-variant-numeric:tabular-nums}
+#timeValue[style*="255, 93, 112"]{text-shadow:0 0 24px #ff5d7044}
+.primary-btn:active{transform:translateY(1px) scale(.99)}
+.icon-btn:hover{border-color:#4b6b80;background:#111d2b}
+.touch-controls button{box-shadow:0 5px 18px #0005,inset 0 1px #ffffff0c}
+@media(max-width:900px){
+  .stats-panel .stat-line{padding-top:11px;margin-top:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .primary-btn:active{transform:none}
+}

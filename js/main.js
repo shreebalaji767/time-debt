@@ -737,5 +737,29 @@
   });
   ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";if(soundOn)tone(600,.08);});
   window.addEventListener("resize",resize);
+  // Installable, offline-capable PWA. The game remains fully static and local-first.
+  const installBtn=$("installBtn");
+  let installPrompt=null;
+  if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
+    window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  }
+  window.addEventListener("beforeinstallprompt",event=>{
+    event.preventDefault();installPrompt=event;
+    if(installBtn)installBtn.hidden=false;
+  });
+  window.addEventListener("appinstalled",()=>{
+    installPrompt=null;
+    if(installBtn){installBtn.hidden=true;installBtn.querySelector("span").textContent="INSTALLED";}
+  });
+  if(installBtn)installBtn.addEventListener("click",async()=>{
+    if(installPrompt){
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt=null;
+      installBtn.hidden=true;
+    }else{
+      alert("To install TIME DEBT, open your browser menu and choose “Install app” or “Add to Home Screen”. On desktop, use the install icon in the address bar when available.");
+    }
+  });
   renderSkillTree();renderAchievements();reset();resize();
 })();

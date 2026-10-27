@@ -1,5 +1,11 @@
 # TIME DEBT
 
+## Version 3.5.0 — Accessibility & Challenge Controls
+- Added a Time Trial shortcut that launches the selected mission on Nightmare difficulty.
+- Added persistent screen-shake and large-touch-control toggles for player comfort and mobile accessibility.
+- Kept the mission map, medals, daily challenge, New Game+, and portable save tools.
+- No paid features, ads, third-party libraries, or backend.
+
 ## Version 3.4.0 — Campaign Command & Save Freedom
 - Added a 100-mission command map with completion states and persistent bronze/silver/gold run medals.
 - Added a deterministic daily challenge that rotates by date and awards +3 free Chrono Shards once per day after a win.

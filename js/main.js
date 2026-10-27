@@ -510,6 +510,8 @@
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";
     $("endSymbol").textContent=win?"✓":"×";
     $("endTitle").textContent=win?("Mission complete."):"Debt collected.";
+    ui.retryBtn.innerHTML=win?"REPLAY LEVEL <span>↻</span>":"REPLAY LEVEL <span>↻</span>";
+    ui.retryBtn.setAttribute("aria-label","Replay level "+String(levelIndex+1));
     const completedLevel=LEVELS[levelIndex];
     const nextButton=$("nextLevelBtn");
     ensureLevel(levelIndex+1);

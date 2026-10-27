@@ -1,3 +1,11 @@
+# TIME DEBT
+
+## Version 3.2.0 — Installable & Offline Play
+- Added a web app manifest and service worker for installable, standalone play on supported browsers.
+- Caches the game shell on first visit and serves it offline; new releases replace the previous cache automatically.
+- Added an install button when the browser exposes its install prompt, with browser-menu guidance as a fallback.
+- Remains static-hosting friendly: no backend, database, third-party libraries, ads, payments, or paid unlocks.
+
 ## Version 3.1.0 — Echo Bolt, Secret Contracts & Achievements
 - Added the free, shard-unlocked Echo Bolt weapon (press **V** or tap ✧); three ranks improve damage and cooldown against chapter bosses.
 - Added three optional secret contracts with persistent completion tracking and a five-shard reward each.

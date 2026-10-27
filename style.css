@@ -650,3 +650,113 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .world-preview-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;min-height:0;max-height:none;aspect-ratio:48/11;object-fit:fill;}
 .preview-live-readout{left:clamp(8px,1.5vw,16px);right:clamp(8px,1.5vw,16px);bottom:clamp(6px,1vw,12px);}
 @media(max-width:560px){.landing-preview{margin-inline:0;width:100%;}.preview-world{aspect-ratio:48/11;}.preview-top,.preview-bottom{min-width:0;gap:6px;}.preview-top>span,.preview-bottom>span{min-width:0;overflow-wrap:anywhere;}}
+
+
+/* v4.1.0 — fluid layout across phones, tablets, laptops, ultrawide and embedded views */
+html,body{width:100%;max-width:100%;min-width:0;margin:0;overflow-x:clip}
+*,*::before,*::after{min-width:0}
+img,svg,video,canvas,iframe{max-width:100%}
+.app-shell{width:100%;max-width:1600px;margin-inline:auto;padding-inline:clamp(10px,2.4vw,36px)}
+main,header,footer,section,article,aside,.intro,.landing-preview,.game-layout,.game-frame,.canvas-wrap,.sidebar,.bottom-strip{min-width:0;max-width:100%}
+.intro{padding-inline:0}
+h1{max-width:100%;overflow-wrap:break-word}
+.intro-copy{max-width:min(100%,52ch)}
+.landing-actions{min-width:0;max-width:100%}
+.landing-hint{min-width:0;overflow-wrap:anywhere}
+.hero-specs{min-width:0}
+.landing-preview{width:100%;max-width:100%;margin-inline:0}
+.preview-top,.preview-bottom{min-width:0;max-width:100%;overflow:hidden}
+.preview-top>span,.preview-bottom>span{min-width:0;overflow-wrap:anywhere}
+.preview-world{width:100%;max-width:100%;aspect-ratio:48/11;height:auto;min-height:0}
+.world-preview-canvas{width:100%;height:100%;max-width:100%;min-height:0;max-height:none;object-fit:fill}
+.game-layout{width:100%;grid-template-columns:minmax(0,1fr) minmax(0,310px);gap:clamp(10px,1.5vw,20px)}
+.game-frame,.panel{min-width:0}
+.canvas-wrap{width:100%;max-width:100%;overflow:hidden}
+#game{display:block;width:100%;max-width:100%;height:auto;min-height:0;aspect-ratio:8/5}
+.frame-top,.game-footer{min-width:0;max-width:100%;overflow:hidden}
+.frame-top>span,.game-footer>span{min-width:0;overflow-wrap:anywhere}
+.sidebar{min-width:0}
+.panel-heading,.campaign-summary,.stat-line,.debt-row,.meter-labels{min-width:0;max-width:100%}
+.panel p,.skill-copy,.achievement-row,.secret-row{overflow-wrap:anywhere}
+.campaign-actions,.save-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+.hub-btn,.skill-buy{max-width:100%;overflow-wrap:anywhere;white-space:normal}
+.mission-map{grid-template-columns:repeat(10,minmax(0,1fr));width:100%}
+.bottom-strip{grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:clamp(8px,1.5vw,20px)}
+footer{width:100%;min-width:0;flex-wrap:wrap}
+footer span{min-width:0;overflow-wrap:anywhere}
+.toast{max-width:calc(100% - 20px);white-space:normal;text-align:center;overflow-wrap:anywhere}
+.overlay{min-width:0;max-width:100%;overflow-y:auto;overscroll-behavior:contain}
+.story-card{width:min(100%,650px);min-width:0}
+.run-options{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:430px}
+.run-options .difficulty-picker{min-width:0}
+.difficulty-picker select,#levelSelect{width:100%;min-width:0;max-width:100%}
+.setting-row{min-width:0}
+.setting-row select,.setting-row input[type=range]{min-width:0;max-width:100%}
+
+@media(min-width:1601px){
+  .app-shell{max-width:1680px;padding-inline:40px}
+}
+@media(max-width:1100px){
+  .app-shell{padding-inline:clamp(12px,2.2vw,24px)}
+  .game-layout{grid-template-columns:minmax(0,1fr) minmax(250px,290px)}
+  .bottom-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .strip-note{justify-self:start}
+}
+@media(max-width:850px){
+  .game-layout{grid-template-columns:minmax(0,1fr)}
+  .sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .time-panel,.progression-hub{grid-column:1/-1}
+  .bottom-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:600px){
+  .app-shell{padding-inline:10px}
+  .topbar{gap:6px;max-width:100%}
+  .brand{flex:0 1 auto;min-width:0}
+  .brand-name{white-space:normal;overflow-wrap:anywhere}
+  .top-status{flex:0 0 auto}
+  .intro{padding-block:24px 18px}
+  h1{font-size:clamp(34px,9.5vw,56px);letter-spacing:-.06em}
+  .landing-actions{gap:8px}
+  .landing-actions .primary-btn{max-width:100%}
+  .hero-specs{gap:5px 12px}
+  .preview-top,.preview-bottom{height:auto;min-height:34px;padding:8px;letter-spacing:.04em;font-size:clamp(6px,1.6vw,8px)}
+  .preview-world{aspect-ratio:16/5}
+  .preview-live-readout{font-size:7px}
+  .sidebar{grid-template-columns:minmax(0,1fr)}
+  .time-panel,.progression-hub{grid-column:auto}
+  .panel{padding:clamp(12px,3vw,16px)}
+  .run-options{grid-template-columns:minmax(0,1fr);max-width:320px}
+  .overlay{padding:10px}
+  .overlay .story-card{width:100%;max-height:none}
+  .messenger .chat-thread{min-height:0;max-height:26vh}
+  .overlay .story-card p{font-size:10px}
+  .bottom-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  footer{gap:8px 12px;padding-block:14px 20px}
+}
+@media(max-width:390px){
+  .app-shell{padding-inline:8px}
+  .brand-mark{width:28px;height:28px;flex-basis:28px}
+  .brand-name{font-size:9px;letter-spacing:.1em}
+  .brand-name small{font-size:5px;letter-spacing:.08em}
+  .top-status{display:none}
+  .icon-btn{padding:7px}
+  .landing-actions{align-items:flex-start;flex-direction:column}
+  .hero-specs{display:grid;grid-template-columns:minmax(0,1fr)}
+  .preview-top,.preview-bottom{align-items:flex-start;flex-direction:column;justify-content:center;gap:3px}
+  .preview-world{aspect-ratio:3/1}
+  .bottom-strip{grid-template-columns:minmax(0,1fr)}
+  .strip-note{justify-self:start}
+  .mission-map{gap:2px}
+  .mission-node{font-size:7px}
+  .campaign-summary{align-items:flex-start;flex-direction:column}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .topbar{height:52px}
+  .intro{padding-block:14px}
+  h1{font-size:clamp(30px,5vw,52px);margin-block:12px}
+  .hero-specs{margin-block:12px}
+  .landing-preview{margin-top:10px}
+  .preview-world{aspect-ratio:16/3.5}
+  .overlay{justify-content:flex-start}
+}
+@supports not (overflow:clip){html,body{overflow-x:hidden}}

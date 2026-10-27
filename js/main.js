@@ -246,6 +246,7 @@
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = localStorage.getItem("td-sound") !== "off", audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let screenShakeOn=localStorage.getItem("td-screen-shake")!=="off",largeTouch=localStorage.getItem("td-large-touch")==="on";
+  let practiceMode=localStorage.getItem("td-practice-mode")==="on";
   let gameplayMode = 0, modeClock = 0, dashCooldown = 0, dashTime = 0, dashDirection = 1;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let boss = null, bossBolts = [], playerBolts = [], bossNotice = 0;
@@ -296,9 +297,11 @@
   const missionMap=$("missionMap");
   if(missionMap)missionMap.addEventListener("click",e=>{const b=e.target.closest("[data-mission]");if(!b)return;chooseLevel(b.dataset.mission);const select=$("levelSelect");if(select)select.value=String(levelIndex);});
   const shakeToggle=$("shakeToggleBtn"),touchSize=$("touchSizeBtn");
-  function renderAccessibility(){if(shakeToggle){shakeToggle.textContent="SCREEN SHAKE: "+(screenShakeOn?"ON":"OFF");shakeToggle.setAttribute("aria-pressed",String(screenShakeOn));}if(touchSize){touchSize.textContent="LARGE TOUCH: "+(largeTouch?"ON":"OFF");touchSize.setAttribute("aria-pressed",String(largeTouch));}document.body.classList.toggle("large-touch-controls",largeTouch);}
+  const practiceToggle=$("practiceModeBtn");
+  function renderAccessibility(){if(shakeToggle){shakeToggle.textContent="SCREEN SHAKE: "+(screenShakeOn?"ON":"OFF");shakeToggle.setAttribute("aria-pressed",String(screenShakeOn));}if(touchSize){touchSize.textContent="LARGE TOUCH: "+(largeTouch?"ON":"OFF");touchSize.setAttribute("aria-pressed",String(largeTouch));}if(practiceToggle){practiceToggle.textContent="PRACTICE MODE: "+(practiceMode?"ON":"OFF");practiceToggle.setAttribute("aria-pressed",String(practiceMode));}document.body.classList.toggle("large-touch-controls",largeTouch);}
   if(shakeToggle)shakeToggle.addEventListener("click",()=>{screenShakeOn=!screenShakeOn;localStorage.setItem("td-screen-shake",screenShakeOn?"on":"off");if(!screenShakeOn)shake=0;renderAccessibility();});
   if(touchSize)touchSize.addEventListener("click",()=>{largeTouch=!largeTouch;localStorage.setItem("td-large-touch",largeTouch?"on":"off");renderAccessibility();});
+  if(practiceToggle)practiceToggle.addEventListener("click",()=>{practiceMode=!practiceMode;localStorage.setItem("td-practice-mode",practiceMode?"on":"off");renderAccessibility();if(running&&!ended)say(practiceMode?"PRACTICE MODE // TIMER DISABLED":"STANDARD TIMER RESTORED");else say(practiceMode?"PRACTICE MODE ENABLED":"PRACTICE MODE DISABLED");});
   const timeTrial=$("timeTrialBtn");if(timeTrial)timeTrial.addEventListener("click",()=>{difficultyKey="nightmare";difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-time-trial","on");localStorage.removeItem("td-daily-active");if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("TIME TRIAL // NIGHTMARE");});
   renderAccessibility();
   const dailyButton=$("dailyChallengeBtn");
@@ -528,9 +531,9 @@
   function borrow(){return running&&!ended&&(keys.KeyE||keys.ShiftLeft||keys.ShiftRight||keys[" " + "Borrow"]);}
   function update(dt){
     if(ended)return;
-    elapsed+=dt;
+    if(!practiceMode)elapsed+=dt;
     jumpBuffer=Math.max(0,jumpBuffer-dt);
-    if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
+    if(!practiceMode&&elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
     modeClock+=dt;dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);pulseCooldown=Math.max(0,pulseCooldown-dt);pulseTime=Math.max(0,pulseTime-dt);weaponCooldown=Math.max(0,weaponCooldown-dt);
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
@@ -544,7 +547,7 @@
     else flow=1;
     if(chaosEvent>0&&!borrowedNow){flow*=1+0.28*LEVELS[levelIndex].chaos*difficulty.chaos;worldTime+=dt*2.5;}
     worldTime+=dt*flow;
-    const left=TOTAL-elapsed;
+    const left=practiceMode?TOTAL:TOTAL-elapsed;
     if(bossNotice>0)bossNotice=Math.max(0,bossNotice-dt);
     if(boss&&!boss.defeated){
       boss.phase+=dt;boss.hitFlash=Math.max(0,boss.hitFlash-dt);boss.y=405+Math.sin(worldTime*1.7)*22;boss.specialClock-=dt;boss.teleportClock-=dt;if(boss.special==="shield"){boss.shielded=Math.sin(worldTime*2.2)>-.1;}else boss.shielded=false;if(boss.special==="blink"&&boss.teleportClock<=0){boss.x=player.x>2200?2500:2760;boss.teleportClock=3.2;say("TEMPORAL BLINK // TRACK THE CORE");}if(boss.special==="gravity"&&boss.specialClock<=0){player.vy=-Math.max(240,difficulty.jump*.62);boss.specialClock=4.5;say("GRAVITY FLIP // STAY AIRBORNE");tone(330,.18,"sine",.025);}if(boss.special==="erase"&&boss.specialClock<=0){bossBolts=bossBolts.filter(b=>b.x<boss.x-140||b.x>boss.x+140);boss.specialClock=4;say("MEMORY WIPE // PROJECTILES ERASED");}if(boss.special==="burn"&&boss.specialClock<=0){bossBolts.push({x:boss.x-80,y:FLOOR-20,vx:-180,vy:0,r:13,life:2.8,color:boss.color});bossBolts.push({x:boss.x+80,y:FLOOR-20,vx:180,vy:0,r:13,life:2.8,color:boss.color});boss.specialClock=3.8;say("ASH WAVE // JUMP THE FLOOR");}if(boss.special==="mirror"&&boss.specialClock<=0){bossBolts.push({x:player.x,y:player.y+player.h/2,vx:-260,vy:0,r:10,life:2.4,color:boss.color});boss.specialClock=3.4;say("MIRROR STRIKE // KEEP MOVING");}if(boss.special==="sweep"&&boss.specialClock<=0){for(let i=0;i<4;i++)bossBolts.push({x:boss.x-90+i*55,y:300+i%2*70,vx:-220,vy:0,r:9,life:3,color:boss.color});boss.specialClock=3.2;say("STORM SWEEP // FIND THE GAP");}
@@ -554,8 +557,8 @@
     }
     playerBolts=playerBolts.filter(b=>{b.x+=b.vx*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-100||b.x>cameraX+W+150)return false;if(boss&&!boss.defeated&&b.x>boss.x&&b.x<boss.x+boss.w&&b.y>boss.y&&b.y<boss.y+boss.h){if(boss.shielded){say("ECHO BOLT DEFLECTED // CORE SHIELDED");tone(170,.08,"square",.02);}else{boss.hp=Math.max(0,boss.hp-b.damage);boss.hitFlash=.2;shake=4;tone(560,.08,"triangle",.03);if(boss.hp===0){boss.defeated=true;bossBolts=[];elapsed=Math.max(0,elapsed-4);say("COLLECTOR CORE SHATTERED // +4 SEC");tone(880,.25,"triangle",.04);}}return false;}return true;});
     bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;if(pulseTime>0)return true;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty*(1-(skillLevels.armor||0)*.1));runHits++;shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
-    ui.time.textContent=left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
-    ui.time.style.color=left<10?"var(--red)":"var(--cyan)";
+    ui.time.textContent=practiceMode?"∞":left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
+    ui.time.style.color=!practiceMode&&left<10?"var(--red)":"var(--cyan)";
     ui.debt.innerHTML=debt.toFixed(1)+'<span>s</span>';ui.debtMeter.style.width=(debt/12*100)+"%";
     ui.paid.innerHTML=paid.toFixed(1)+'<span>s</span>';ui.world.textContent="WORLD FLOW: "+flow.toFixed(2)+"×";
     const accel=borrowedNow?0:flow;

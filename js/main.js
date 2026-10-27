@@ -185,6 +185,35 @@
     const mode=GAMEPLAY_MODES[beat];
     return {name:title,mode:beat,modeName:mode.name,modeBrief:mode.brief,time:Math.max(-12,Math.round(2-beat*.65-chapterIndex*.55)),hazard:Math.min(3.4,1+chapterIndex*.13+beat*.035),chaos:Math.min(6.5,1+chapterIndex*.38+beat*.12),chapter:chapterIndex,beat,story:beat===0?chapter.intro:beat===9?chapter.goal:["A broken transmission points deeper into "+chapter.world+".","The sentinels are adapting. Keep moving and preserve your remaining time.","A chrono-shard reveals another fragment of the collector's origin.","The route is collapsing behind you. The next gate is your only way forward.","Your borrowed seconds echo through the ruins. Something is listening.","The signal grows stronger, but so does the debt.","A hidden record confirms that the timeline was deliberately fractured.","The collector is close. Stabilize the final gate and prepare to cross."][Math.min(beat-1,7)],chapterName:chapter.name};
   });
+  const BASE_CAMPAIGN_LENGTH=100;
+  function ensureLevel(index){
+    if(!Number.isInteger(index)||index<0)return null;
+    while(LEVELS.length<=index){
+      const n=LEVELS.length,base=LEVELS[n%BASE_CAMPAIGN_LENGTH],modeIndex=n%GAMEPLAY_MODES.length;
+      const cycle=Math.floor(n/BASE_CAMPAIGN_LENGTH),chapterIndex=Math.floor(n/10);
+      const mode=GAMEPLAY_MODES[modeIndex];
+      const suffix=cycle?(" · CYCLE "+(cycle+1)):"";
+      LEVELS.push({
+        ...base,
+        name:"SECTOR "+String(n+1).padStart(4,"0")+" // "+base.name+suffix,
+        mode:modeIndex,modeName:mode.name,modeBrief:mode.brief,
+        time:Math.max(-22,base.time-Math.floor(n/25)*.35),
+        hazard:Math.min(5.2,base.hazard+Math.floor(n/20)*.08),
+        chaos:Math.min(9,base.chaos+Math.floor(n/15)*.12),
+        chapter:chapterIndex,beat:modeIndex,
+        chapterName:CHAPTERS[chapterIndex%CHAPTERS.length].name,
+        story:"Procedural sector "+(n+1)+". "+mode.brief+" Route seed "+((n*7919+104729)%999983)+". Every attempt reshapes the temporal field."
+      });
+    }
+    return LEVELS[index];
+  }
+  function refreshLevelOptions(){
+    if(!ui.levelSelect)return;
+    const upto=Math.max(BASE_CAMPAIGN_LENGTH,levelIndex+100);
+    for(let i=LEVELS.length;i<upto;i++)ensureLevel(i);
+    ui.levelSelect.innerHTML=LEVELS.map((level,i)=>'<option value="'+i+'">'+String(i+1).padStart(4,"0")+' · '+level.modeName+' — '+level.name+'</option>').join("");
+    ui.levelSelect.value=String(levelIndex);
+  }
   const STORY_CONTACTS=[
     {name:"MARA // SIGNAL OPERATOR",initial:"M",role:"MARA",open:"I found your signal. I thought you were erased with the rest of the morning.",reply:"I am alive. Tell me where to go.",close:"Follow the cyan gates. If the clock starts speaking, do not answer."},
     {name:"ELI // FUTURE ARCHIVIST",initial:"E",role:"ELI",open:"I am messaging you from a future that officially never happened.",reply:"Then why do I remember it?",close:"Because someone left your memories outside the timeline. Find my archive."},
@@ -237,9 +266,10 @@
     chat.querySelectorAll(".chat-message").forEach((node,i)=>{node.querySelector(".chat-sender").textContent=messages[i].from;node.querySelector("p").textContent=messages[i].text;});
     chat.scrollTop=0;
   }
-  let levelIndex=Math.max(0,Math.min(99,Number(localStorage.getItem("td-level")||0)));
+  let levelIndex=Math.max(0,Number(localStorage.getItem("td-level")||0));
+  ensureLevel(levelIndex);
   let storyProgress=Math.max(0,Math.min(100,Number(localStorage.getItem("td-story-progress")||0)));
-  if(ui.levelSelect)ui.levelSelect.innerHTML=LEVELS.map((level,i)=>`<option value="${i}">${String(i+1).padStart(3,"0")} · CH ${String(level.chapter+1).padStart(2,"0")} — ${level.name}</option>`).join("");
+  refreshLevelOptions();
   let difficultyKey=localStorage.getItem("td-difficulty")||"standard";
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
@@ -289,10 +319,10 @@
   function dailySpec(){const d=dayStamp();let n=0;for(const ch of d)n=(n*31+ch.charCodeAt(0))>>>0;return {date:d,mission:n%100,difficulty:["standard","paradox","nightmare"][n%3]};}
   function renderProgressHub(){
     const done=Math.max(storyProgress,Object.keys(missionRecords).filter(k=>Number(missionRecords[k])>0).length);
-    const pct=Math.round(Math.min(100,storyProgress)/100*100);
+    const pct=storyProgress?Math.min(100,Math.round(storyProgress/(storyProgress+20)*100)):0;
     const p=$("campaignPercent"),s=$("campaignSummary"),m=$("campaignMeter"),count=$("missionMapCount"),map=$("missionMap");
-    if(p)p.textContent=pct+"%";if(s)s.textContent=storyProgress+" / 100 MISSIONS COMPLETE";if(m)m.style.width=pct+"%";if(count)count.textContent=storyProgress+" / 100";
-    if(map){map.innerHTML=LEVELS.map((level,i)=>{const completed=i<storyProgress,medal=missionMedals[String(i)]||"",isCurrent=i===levelIndex;return '<button type="button" class="mission-node '+(completed?"is-complete ":"")+(isCurrent?"is-current ":"")+'" data-mission="'+i+'" aria-label="Mission '+(i+1)+': '+level.name+(completed?", completed":"")+'"><span>'+String(i+1).padStart(2,"0")+'</span><small>'+(medal==="gold"?"★":medal==="silver"?"◆":medal==="bronze"?"●":completed?"✓":"")+'</small></button>';}).join("");}
+    if(p)p.textContent=storyProgress.toLocaleString()+"+";if(s)s.textContent=storyProgress.toLocaleString()+" MISSIONS COMPLETE · ENDLESS";if(m)m.style.width=pct+"%";if(count)count.textContent="∞ · "+(levelIndex+1).toLocaleString()+" CURRENT";
+    if(map){const start=Math.max(0,Math.floor(levelIndex/100)*100);for(let i=LEVELS.length;i<start+100;i++)ensureLevel(i);map.innerHTML=LEVELS.slice(start,start+100).map((level,offset)=>{const i=start+offset,completed=i<storyProgress,medal=missionMedals[String(i)]||"",isCurrent=i===levelIndex;return '<button type="button" class="mission-node '+(completed?"is-complete ":"")+(isCurrent?"is-current ":"")+'" data-mission="'+i+'" aria-label="Mission '+(i+1)+': '+level.name+(completed?", completed":"")+'"><span>'+String(i+1).padStart(3,"0")+'</span><small>'+(medal==="gold"?"★":medal==="silver"?"◆":medal==="bronze"?"●":completed?"✓":"")+'</small></button>';}).join("");}
     const info=$("dailyChallengeInfo"),daily=dailySpec(),claimed=localStorage.getItem("td-daily-claimed")===daily.date;
     if(info)info.textContent="TODAY · MISSION "+String(daily.mission+1).padStart(3,"0")+" · "+daily.difficulty.toUpperCase()+" · "+(claimed?"REWARD CLAIMED (+3 SHARDS)":"Win for +3 free shards");
   }
@@ -382,9 +412,16 @@
     ];
     // Each mission reshapes the route deterministically; the chapter story stays continuous.
     platforms.forEach((p,i)=>{
-      if((i>=3&&i<=11||i===13||i===14)){p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(34,8+levelIndex*.22),300,480);p.w=Math.max(82,p.w-(levelIndex%7)*3);}
+      if((i>=3&&i<=11||i===13||i===14)){
+        const seed=Math.sin((levelIndex+1)*127.1+(i+1)*311.7)*43758.5453;
+        const variation=(seed-Math.floor(seed))*2-1;
+        p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(42,8+(levelIndex%120)*.28)+variation*18,292,482);
+        p.w=Math.max(76,p.w-((levelIndex*3+i*5)%8)*4);
+        if(levelIndex%10===3||levelIndex%10===6)p.moving=true;
+        if(levelIndex%10===4||levelIndex%10===8)p.fragile=true;
+      }
     });
-    hazards.forEach((h,i)=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.homeY=h.y;h.phase+=levelIndex*.19;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.12:1;if(gameplayMode===5){h.verticalRange=34+(i%3)*12;h.homeY=h.y;}});
+    hazards.forEach((h,i)=>{h.base=h.x;h.direction=1;h.alert=0;h.lastX=h.x;h.homeY=h.y;h.phase+=levelIndex*.19+(i*1.37);h.speed*=levelHazardFactor*(1+((levelIndex+i)%5)*.035);h.range*=levelHazardFactor>1?1.12:1;if(gameplayMode===5||levelIndex%10===5){h.verticalRange=34+(i%3)*12;h.homeY=h.y;}});
     const extraByLevel=Math.min(6,levelIndex+(difficulty.extra||0));
     const extraSpawns=[{x:475,y:488,w:28,h:22,range:55,speed:1.7,phase:.8},{x:990,y:330,w:22,h:32,range:75,speed:1.9,phase:2.1},{x:1370,y:360,w:30,h:20,range:90,speed:2.1,phase:1.1},{x:1960,y:330,w:22,h:32,range:72,speed:2.2,phase:2.7},{x:2460,y:355,w:30,h:20,range:88,speed:2.3,phase:1.9},{x:2850,y:405,w:26,h:28,range:64,speed:2.4,phase:.3}];
     for(let i=0;i<Math.min(extraSpawns.length,extraByLevel);i++){const h={...extraSpawns[i],base:extraSpawns[i].x,direction:1,alert:0,lastX:extraSpawns[i].x,homeY:extraSpawns[i].y};if(gameplayMode===5)h.verticalRange=42;h.speed*=levelHazardFactor;h.range*=levelHazardFactor>1?1.1:1;hazards.push(h);}
@@ -471,17 +508,18 @@
     ui.end.classList.remove("hidden");
     $("endKicker").textContent=win?"TEMPORAL EXIT CONFIRMED":"TIMELINE COLLAPSED";
     $("endSymbol").textContent=win?"✓":"×";
-    $("endTitle").textContent=win?(levelIndex>=99?"The timeline is yours.":"Mission complete."):"Debt collected.";
+    $("endTitle").textContent=win?("Mission complete."):"Debt collected.";
     const completedLevel=LEVELS[levelIndex];
     const nextButton=$("nextLevelBtn");
+    ensureLevel(levelIndex+1);
     if(nextButton){
-      nextButton.classList.toggle("hidden",!win||levelIndex>=99);
-      nextButton.textContent="NEXT MISSION "+String(Math.min(100,levelIndex+2)).padStart(3,"0")+" →";
-      nextButton.setAttribute("aria-label","Start next mission "+String(Math.min(100,levelIndex+2)));
+      nextButton.classList.toggle("hidden",!win);
+      nextButton.textContent="NEXT MISSION "+String(levelIndex+2).padStart(4,"0")+" →";
+      nextButton.setAttribute("aria-label","Start next mission "+String(levelIndex+2));
     }
     const storedMissionBest=Number(missionRecords[String(levelIndex)]||0);
     const missionBest=win?(!storedMissionBest||elapsed<storedMissionBest?elapsed:storedMissionBest):storedMissionBest;
-    $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+runShards+"/8 chrono-shards collected. Mission best: "+(missionBest?missionBest.toFixed(2)+"s":"—")+". "+(levelIndex>=99?"You have completed all 100 missions.":"Next mission unlocked: "+String(levelIndex+2).padStart(3,"0")+" · "+LEVELS[levelIndex+1].name+".")):reason;
+    $("endCopy").textContent=win?("MISSION "+String(levelIndex+1).padStart(3,"0")+" // "+completedLevel.name+". "+completedLevel.story+" Gate reached with "+Math.max(0,TOTAL-elapsed).toFixed(1)+" seconds remaining. "+runShards+"/8 chrono-shards collected. Mission best: "+(missionBest?missionBest.toFixed(2)+"s":"—")+". "+("Next mission unlocked: "+String(levelIndex+2).padStart(4,"0")+" · "+ensureLevel(levelIndex+1).name+".")):reason;
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
@@ -492,7 +530,7 @@
       const nextProgress=Math.max(storyProgress,levelIndex+1);storyProgress=nextProgress;localStorage.setItem("td-story-progress",String(nextProgress));const progressNode=$("storyProgressText");if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
       // Persist the next campaign position without changing the active mission index.
       // The Next Mission button advances the active index exactly once.
-      if(levelIndex<99)localStorage.setItem("td-level",String(Math.min(99,Math.max(levelIndex+1,nextProgress))));
+      localStorage.setItem("td-level",String(Math.max(levelIndex+1,nextProgress)));
       const recordKey=String(levelIndex),previousRecord=Number(missionRecords[recordKey]||0);
       if(!previousRecord||elapsed<previousRecord){missionRecords[recordKey]=Number(elapsed.toFixed(2));localStorage.setItem("td-mission-records",JSON.stringify(missionRecords));}
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
@@ -529,8 +567,8 @@
     say(difficulty.label+" MODE SELECTED");
   }
   function chooseLevel(value){
-    const n=Number(value);if(!Number.isInteger(n)||n<0||n>=LEVELS.length)return;
-    levelIndex=n;localStorage.setItem("td-level",String(n));
+    const n=Number(value);if(!Number.isInteger(n)||n<0)return;
+    ensureLevel(n);levelIndex=n;refreshLevelOptions();localStorage.setItem("td-level",String(n));
     if(!running)reset();
     say("LEVEL "+(n+1)+" // "+LEVELS[n].name);
   }
@@ -774,8 +812,8 @@
   ui.startBtn.addEventListener("click",start);ui.retryBtn.addEventListener("click",start);
   const nextLevelBtn=$("nextLevelBtn");
   if(nextLevelBtn)nextLevelBtn.addEventListener("click",()=>{
-    if(!ended||levelIndex>=99)return;
-    levelIndex=Math.min(99,levelIndex+1);
+    if(!ended)return;
+    levelIndex+=1;ensureLevel(levelIndex);refreshLevelOptions();
     localStorage.setItem("td-level",String(levelIndex));
     reset();
     start();

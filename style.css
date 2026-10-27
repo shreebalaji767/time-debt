@@ -773,3 +773,121 @@ main{width:100%;max-width:none;min-width:0}
 .sidebar{min-width:0}
 @media(max-width:850px){.game-layout{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.app-shell{padding-inline:8px}}
+
+
+/* v4.2.0 — clean, consistent page design */
+:root{
+  --bg:#080c13;
+  --panel:#0d1420;
+  --line:#202c3c;
+  --muted:#8493a8;
+  --text:#edf4fb;
+  --cyan:#66e5f1;
+  --amber:#ffc16a;
+}
+body{
+  background:
+    radial-gradient(ellipse at 50% -12%,rgba(50,103,139,.16),transparent 48%),
+    var(--bg);
+  line-height:1.55;
+  letter-spacing:.01em;
+}
+.app-shell{padding-inline:clamp(12px,2vw,28px)}
+.topbar{
+  height:68px;
+  gap:16px;
+  border-bottom-color:rgba(130,158,187,.16);
+}
+.brand{gap:10px;flex-shrink:0}
+.brand-mark{width:34px;height:34px;flex-basis:34px}
+.brand-name{font-size:12px;letter-spacing:.13em}
+.brand-name small{letter-spacing:.14em}
+.top-status{font-size:9px;letter-spacing:.09em}
+.icon-btn,.primary-btn,.hub-btn,.skill-buy{
+  border-radius:8px;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.icon-btn{border-color:#29384a;background:#101925;padding:10px 13px}
+.icon-btn:hover{background:#172434;border-color:#456179}
+.primary-btn{
+  min-height:46px;
+  padding:13px 19px;
+  border-radius:8px;
+  box-shadow:0 5px 20px rgba(57,203,220,.10);
+}
+.primary-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(57,203,220,.16)}
+.intro{padding:clamp(28px,4vw,54px) 0 clamp(24px,3vw,38px)}
+.eyebrow{font-size:10px;letter-spacing:.12em;color:#8ca2b9}
+h1{font-size:clamp(38px,5.3vw,72px);line-height:.99;letter-spacing:-.065em;margin:18px 0 16px}
+.intro-copy{max-width:54ch;font-size:clamp(12px,1.15vw,14px);line-height:1.8;color:#9baabd}
+.landing-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:24px}
+.landing-hint{font-size:9px;color:#8192a7;letter-spacing:.07em}
+.hero-specs{display:flex;flex-wrap:wrap;gap:10px 22px;margin:22px 0 26px}
+.hero-specs span{font-size:9px;color:#9aacc0;letter-spacing:.07em}
+.landing-preview{
+  border:1px solid #253447;
+  border-radius:12px;
+  overflow:hidden;
+  background:#080e17;
+  box-shadow:0 18px 55px rgba(0,0,0,.18);
+}
+.preview-top,.preview-bottom{padding-inline:16px;color:#91a4ba}
+.preview-top{border-bottom-color:#1d2a39}
+.preview-bottom{border-top:1px solid #1d2a39}
+.preview-world{background:#080e17}
+.game-layout{gap:18px;align-items:start}
+.game-frame,.panel{
+  border:1px solid #253448;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 12px 34px rgba(0,0,0,.12);
+}
+.frame-top,.game-footer{padding-inline:14px;background:rgba(13,20,32,.7)}
+.canvas-wrap{background:#070b12}
+.sidebar{gap:14px}
+.panel{padding:17px;background:linear-gradient(160deg,rgba(17,27,42,.98),rgba(11,17,27,.98))}
+.panel-heading{margin-bottom:12px}
+.panel p{line-height:1.7}
+.bottom-strip{
+  margin-top:20px;
+  padding:18px;
+  border:1px solid #202d3d;
+  border-radius:10px;
+  background:rgba(13,20,31,.7);
+}
+footer{padding-block:22px 28px;color:#7f91a7;font-size:9px}
+.overlay{padding:clamp(12px,2vw,24px)}
+.story-card{border-radius:10px}
+.run-options{gap:10px}
+.difficulty-picker{gap:7px}
+select,input,textarea{max-width:100%;border-radius:7px}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+}
+.hidden,[hidden]{display:none!important}
+@media(min-width:1200px){
+  .intro{max-width:none}
+  .landing-preview{margin-top:4px}
+}
+@media(max-width:850px){
+  .game-layout{gap:14px}
+  .sidebar{gap:12px}
+  .bottom-strip{padding:14px}
+}
+@media(max-width:600px){
+  .app-shell{padding-inline:10px}
+  .topbar{height:60px}
+  .brand-mark{width:30px;height:30px;flex-basis:30px}
+  .intro{padding-block:26px 22px}
+  h1{font-size:clamp(36px,10vw,54px);margin-block:14px}
+  .landing-actions{margin-top:20px}
+  .hero-specs{margin-block:18px;gap:9px 14px}
+  .preview-top,.preview-bottom{padding:9px 11px}
+  .game-frame,.panel,.landing-preview,.bottom-strip{border-radius:8px}
+  .panel{padding:14px}
+  .frame-top,.game-footer{padding-inline:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
+}

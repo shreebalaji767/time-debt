@@ -1,0 +1,19 @@
+{
+  "name": "TIME DEBT — Borrow Tomorrow",
+  "short_name": "TIME DEBT",
+  "description": "A time-bending survival platformer. Play offline after your first visit.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080b12",
+  "theme_color": "#080b12",
+  "icons": [
+    {
+      "src": "./assets/time-debt-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

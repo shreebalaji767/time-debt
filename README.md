@@ -116,3 +116,8 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 - Added four permanent upgrades purchased with collected Chrono Shards: Time Reserve, Kinetic Drive, Phase Coil, and Debt Armor.
 - Each upgrade has three ranks; costs increase by rank, and shard spending and skill ranks persist in browser local storage.
 - Upgrades affect mission time, jump power, dash cooldown, and time penalties from hits.
+
+
+## Version 3.0.0 — Chrono Pulse Ability
+- Added the unlockable Chrono Pulse skill (8 shards): press C or the mobile pulse button to freeze moving hazards and boss attacks for 1.25 seconds and clear active boss projectiles.
+- Pulse grants brief protection and has a 10-second cooldown; it can be used alongside Phase Dash and time borrowing.

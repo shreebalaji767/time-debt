@@ -1,5 +1,11 @@
 # TIME DEBT
 
+## Version 3.6.0 — Neon Interface Refresh
+- Refreshed the visual system with luminous cyan/violet accents, deeper layered surfaces, refined panels, stronger typography, and cleaner spacing.
+- Improved the landing preview, mission controls, HUD, progression map, touch controls, and focus-visible states.
+- Added responsive layout refinements across desktop, tablet, and mobile widths while preserving reduced-motion support.
+- No new dependencies, ads, or paid features.
+
 ## Version 3.5.0 — Accessibility & Challenge Controls
 - Added a Time Trial shortcut that launches the selected mission on Nightmare difficulty.
 - Added persistent screen-shake and large-touch-control toggles for player comfort and mobile accessibility.

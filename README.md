@@ -174,3 +174,10 @@ No API keys, server-side code, database, assets folder, package manager, or buil
 ## Version 3.0.0 — Chrono Pulse Ability
 - Added the unlockable Chrono Pulse skill (8 shards): press C or the mobile pulse button to freeze moving hazards and boss attacks for 1.25 seconds and clear active boss projectiles.
 - Pulse grants brief protection and has a 10-second cooldown; it can be used alongside Phase Dash and time borrowing.
+
+
+## Version 4.4.0 — Endless Procedural Missions
+- Added on-demand endless mission generation. Completing a mission always unlocks the next one; there is no final level cap.
+- Each generated sector gets a unique mission number, a rotating gameplay mode, escalating hazard/chaos settings, and deterministic per-level platform variation.
+- Mission selection and the mission map expand as you advance; the map shows a 100-mission window around the current sector to keep the UI responsive.
+- Existing local progress is preserved. Generated levels are created on demand in the browser; no database or paid unlocks are required.

@@ -1,5 +1,13 @@
 # TIME DEBT
 
+## Version 4.0.0 — Free Play & Player Control
+- Added four persistent game-speed options: 65%, 80%, 100%, and 115%.
+- Added an independent sound-volume slider; the existing sound toggle remains available.
+- Added a confirmation-protected personal-record reset that preserves campaign progress, shards, skills, and achievements.
+- Settings are stored locally in this browser. No account, server, database, ads, or paid unlocks.
+
+# TIME DEBT
+
 ## Version 3.8.0 — Free Practice Mode
 - Added an optional, persistent Practice Mode toggle that disables the countdown while leaving movement, hazards, bosses, and route challenges active.
 - Shows an infinity symbol for the time reserve during practice and restores normal timer behavior when switched off.

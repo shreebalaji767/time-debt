@@ -244,7 +244,7 @@
   if(!DIFFICULTIES[difficultyKey])difficultyKey="standard";
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
-  let soundOn = true, audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
+  let soundOn = localStorage.getItem("td-sound") !== "off", audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
   let gameplayMode = 0, modeClock = 0, dashCooldown = 0, dashTime = 0, dashDirection = 1;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let boss = null, bossBolts = [], playerBolts = [], bossNotice = 0;
@@ -735,7 +735,11 @@
     const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};
     button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);
   });
-  ui.sound.addEventListener("click",()=>{soundOn=!soundOn;ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";if(soundOn)tone(600,.08);});
+  ui.sound.addEventListener("click",()=>{soundOn=!soundOn;localStorage.setItem("td-sound",soundOn?"on":"off");ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";ui.sound.setAttribute("aria-pressed",String(soundOn));if(soundOn)tone(600,.08);});
+  ui.soundState.textContent=soundOn?"ON":"OFF";ui.sound.style.color=soundOn?"var(--cyan)":"#718096";ui.sound.setAttribute("aria-pressed",String(soundOn));
+  const connectionLabel=$("connectionLabel");
+  function updateConnectionStatus(){if(!connectionLabel)return;const online=navigator.onLine;connectionLabel.textContent=online?"TEMPORAL SYSTEM ONLINE":"OFFLINE // LOCAL MODE";const status=$("connectionStatus");if(status){status.classList.toggle("is-offline",!online);status.setAttribute("aria-label",online?"Online":"Offline; cached game may remain available");}}
+  window.addEventListener("online",updateConnectionStatus);window.addEventListener("offline",updateConnectionStatus);updateConnectionStatus();
   window.addEventListener("resize",resize);
   // Installable, offline-capable PWA. The game remains fully static and local-first.
   const installBtn=$("installBtn");

@@ -736,6 +736,16 @@
   });
   window.addEventListener("keyup",e=>{keys[e.code]=false;});
   window.addEventListener("blur",()=>{keys=Object.create(null);document.querySelectorAll("[data-control]").forEach(b=>b.classList.remove("is-active"));if(running&&!ended)setPaused(true);});
+  // Prevent lost inputs or unfair time loss when the player switches tabs or minimizes the window.
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      keys=Object.create(null);
+      document.querySelectorAll("[data-control]").forEach(b=>b.classList.remove("is-active"));
+      if(running&&!ended&&!paused)setPaused(true);
+    }else if(running&&!ended&&paused){
+      ui.run.textContent="TIMELINE PAUSED · RESUME WHEN READY";
+    }
+  });
   // Pointer/touch controls are intentionally integrated into the playfield.
   let touchX=null;
   canvas.addEventListener("pointerdown",e=>{

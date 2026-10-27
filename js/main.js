@@ -245,6 +245,8 @@
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = localStorage.getItem("td-sound") !== "off", audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
+  let gameSpeed=Number(localStorage.getItem("td-game-speed")||1);if(![.65,.8,1,1.15].includes(gameSpeed))gameSpeed=1;
+  let soundVolume=Math.max(0,Math.min(1,Number(localStorage.getItem("td-volume")??.7)));
   let screenShakeOn=localStorage.getItem("td-screen-shake")!=="off",largeTouch=localStorage.getItem("td-large-touch")==="on";
   let practiceMode=localStorage.getItem("td-practice-mode")==="on";
   let gameplayMode = 0, modeClock = 0, dashCooldown = 0, dashTime = 0, dashDirection = 1;
@@ -304,6 +306,10 @@
   if(practiceToggle)practiceToggle.addEventListener("click",()=>{practiceMode=!practiceMode;localStorage.setItem("td-practice-mode",practiceMode?"on":"off");renderAccessibility();if(running&&!ended)say(practiceMode?"PRACTICE MODE // TIMER DISABLED":"STANDARD TIMER RESTORED");else say(practiceMode?"PRACTICE MODE ENABLED":"PRACTICE MODE DISABLED");});
   const timeTrial=$("timeTrialBtn");if(timeTrial)timeTrial.addEventListener("click",()=>{difficultyKey="nightmare";difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-time-trial","on");localStorage.removeItem("td-daily-active");if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("TIME TRIAL // NIGHTMARE");});
   renderAccessibility();
+  const speedSelect=$("gameSpeedSelect"),volumeSlider=$("soundVolume"),resetRecordsBtn=$("resetRecordsBtn");
+  if(speedSelect){speedSelect.value=String(gameSpeed);speedSelect.addEventListener("change",()=>{const v=Number(speedSelect.value);if([.65,.8,1,1.15].includes(v)){gameSpeed=v;localStorage.setItem("td-game-speed",String(v));say("GAME SPEED // "+Math.round(v*100)+"%");}});}
+  if(volumeSlider){volumeSlider.value=String(Math.round(soundVolume*100));volumeSlider.addEventListener("input",()=>{soundVolume=Number(volumeSlider.value)/100;localStorage.setItem("td-volume",String(soundVolume));});}
+  if(resetRecordsBtn)resetRecordsBtn.addEventListener("click",()=>{if(!confirm("Reset personal bests, mission medals, and run count? Your shards, skills, achievements, and campaign progress will be kept."))return;localStorage.removeItem("td-best");localStorage.removeItem("td-mission-records");localStorage.removeItem("td-mission-medals");localStorage.removeItem("td-runs");best=0;missionRecords={};runsPlayed=0;if(ui.best)ui.best.textContent="—";if(ui.runs)ui.runs.textContent="0";renderProgressHub();say("PERSONAL RECORDS RESET");});
   const dailyButton=$("dailyChallengeBtn");
   if(dailyButton)dailyButton.addEventListener("click",()=>{const d=dailySpec();levelIndex=d.mission;difficultyKey=d.difficulty;difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-level",String(levelIndex));localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-daily-active",d.date);if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("DAILY CHALLENGE // "+d.difficulty.toUpperCase());});
   const ngp=$("newGamePlusBtn");
@@ -336,7 +342,7 @@
       if(audio.state==="suspended") audio.resume();
       const osc=audio.createOscillator(), gain=audio.createGain();
       osc.type=type; osc.frequency.setValueAtTime(freq,audio.currentTime);
-      gain.gain.setValueAtTime(volume,audio.currentTime);
+      gain.gain.setValueAtTime(volume*soundVolume,audio.currentTime);
       gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);
       osc.connect(gain); gain.connect(audio.destination); osc.start(); osc.stop(audio.currentTime+duration);
     }catch(_){}
@@ -722,7 +728,7 @@
   }
   function loop(now){
     if(!running||paused)return;
-    const dt=Math.min((now-last)/1000,.033);last=now;
+    const dt=Math.min((now-last)/1000,.033)*gameSpeed;last=now;
     update(dt);draw();
     fpsFrames++;fpsTime+=dt;if(fpsTime>=.5){ui.latency.textContent=String(Math.round(fpsTime*1000/fpsFrames)).padStart(2,"0");fpsFrames=0;fpsTime=0;}
     if(running)requestAnimationFrame(loop);

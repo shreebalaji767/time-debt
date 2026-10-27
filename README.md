@@ -1,5 +1,14 @@
 # TIME DEBT
 
+## Version 3.4.0 — Campaign Command & Save Freedom
+- Added a 100-mission command map with completion states and persistent bronze/silver/gold run medals.
+- Added a deterministic daily challenge that rotates by date and awards +3 free Chrono Shards once per day after a win.
+- Added New Game+ (mission 1 on Nightmare) while preserving existing records and shard progress.
+- Added local save export/import with file validation so players can back up and move progress between browsers.
+- Improved the campaign dashboard while keeping the game static, dependency-free, offline-capable, free, and ad-free.
+
+# TIME DEBT
+
 ## Version 3.2.0 — Installable & Offline Play
 - Added a web app manifest and service worker for installable, standalone play on supported browsers.
 - Caches the game shell on first visit and serves it offline; new releases replace the previous cache automatically.

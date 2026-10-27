@@ -253,7 +253,7 @@
   try { missionRecords = JSON.parse(localStorage.getItem("td-mission-records") || "{}") || {}; } catch (_) { missionRecords = {}; }
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
   let totalShards = Number(localStorage.getItem("td-shards") || 0);
-  const SKILLS=[{id:"reserve",name:"TIME RESERVE",desc:"+3 seconds per rank",max:3,cost:2},{id:"jump",name:"KINETIC DRIVE",desc:"+7% jump power per rank",max:3,cost:2},{id:"dash",name:"PHASE COIL",desc:"Dash cooldown −0.15s per rank",max:3,cost:2},{id:"armor",name:"DEBT ARMOR",desc:"Reduce hit penalties by 10% per rank",max:3,cost:3},{id:"pulse",name:"CHRONO PULSE",desc:"Unlock C pulse: freeze hazards + clear shots",max:1,cost:8}];
+  const SKILLS=[{id:"reserve",name:"TIME RESERVE",desc:"+3 seconds per rank",max:3,cost:2},{id:"jump",name:"KINETIC DRIVE",desc:"+7% jump power per rank",max:3,cost:2},{id:"dash",name:"PHASE COIL",desc:"Dash cooldown −0.15s per rank",max:3,cost:2},{id:"armor",name:"DEBT ARMOR",desc:"Reduce hit penalties by 10% per rank",max:3,cost:3},{id:"pulse",name:"CHRONO PULSE",desc:"Unlock C pulse: freeze hazards + clear shots",max:1,cost:8},{id:"magnet",name:"SHARD MAGNET",desc:"Collect chrono-shards from farther away",max:3,cost:2}];
   let skillLevels={};try{skillLevels=JSON.parse(localStorage.getItem("td-skills")||"{}");}catch{skillLevels={};}
   SKILLS.forEach(skill=>{skillLevels[skill.id]=Math.max(0,Math.min(skill.max,Number(skillLevels[skill.id])||0));});
   let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
@@ -564,8 +564,9 @@
     if(!borrowedNow&&player.invuln<=0){
       // brief collision immunity after impact
     }
+    const magnetRange=10+(skillLevels.magnet||0)*12;
     shards.forEach(s=>{
-      if(!s.got && player.x+player.w>s.x-10 && player.x<s.x+10 && player.y+player.h>s.y-10 && player.y<s.y+10){
+      if(!s.got && player.x+player.w>s.x-magnetRange && player.x<s.x+magnetRange && player.y+player.h>s.y-magnetRange && player.y<s.y+magnetRange){
         s.got=true; runShards+=1; totalShards+=1; localStorage.setItem("td-shards",String(totalShards));
         ui.shards.innerHTML=runShards+" <small>/ 8</small>";renderSkillTree();
         elapsed=Math.max(0,elapsed-2.5); say("CHRONO SHARD // +2.5 SEC"); tone(820,.12,"triangle");

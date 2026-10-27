@@ -283,7 +283,7 @@
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let boss = null, bossBolts = [], playerBolts = [], bossNotice = 0;
   let weaponCooldown=0, runHits=0;
-  const ACHIEVEMENTS=[{id:"first",name:"FIRST FRACTURE",desc:"Complete your first mission"},{id:"shards",name:"TIME HOARDER",desc:"Collect 25 chrono-shards total"},{id:"boss",name:"CORE BREAKER",desc:"Defeat a chapter boss"},{id:"dash",name:"PHASE MASTER",desc:"Unlock Phase Coil rank 3"},{id:"pulse",name:"TIME BENDER",desc:"Unlock Chrono Pulse"},{id:"clean",name:"CLEAN TIMELINE",desc:"Complete a mission without a hit"},{id:"campaign",name:"TOMORROW SAVED",desc:"Complete all 100 missions"}];
+  const ACHIEVEMENTS=[{id:"first",name:"FIRST FRACTURE",desc:"Complete your first mission"},{id:"shards",name:"TIME HOARDER",desc:"Collect 25 chrono-shards total"},{id:"boss",name:"CORE BREAKER",desc:"Defeat a chapter boss"},{id:"dash",name:"PHASE MASTER",desc:"Unlock Phase Coil rank 3"},{id:"pulse",name:"TIME BENDER",desc:"Unlock Chrono Pulse"},{id:"clean",name:"CLEAN TIMELINE",desc:"Complete a mission without a hit"},{id:"campaign",name:"TOMORROW SAVED",desc:"Reach mission 100 in endless mode"}];
   let achievements={};try{achievements=JSON.parse(localStorage.getItem("td-achievements")||"{}")||{};}catch{achievements={};}
   const SECRET_MISSIONS=[{id:0,name:"GHOST PROTOCOL",desc:"Finish mission 5 without taking a hit",mission:4},{id:1,name:"SHARD RUNNER",desc:"Collect 5 or more shards in mission 15",mission:14},{id:2,name:"BOSS HUNTER",desc:"Defeat the chapter boss in mission 20",mission:19}];
   let secretClaims={};try{secretClaims=JSON.parse(localStorage.getItem("td-secret-claims")||"{}")||{};}catch{secretClaims={};}
@@ -416,7 +416,8 @@
         const seed=Math.sin((levelIndex+1)*127.1+(i+1)*311.7)*43758.5453;
         const variation=(seed-Math.floor(seed))*2-1;
         p.y=clamp(p.y+Math.sin((levelIndex+1)*(i+2)*.37)*Math.min(42,8+(levelIndex%120)*.28)+variation*18,292,482);
-        p.w=Math.max(76,p.w-((levelIndex*3+i*5)%8)*4);
+        p.x+=variation*22;
+        p.w=Math.max(84,p.w-((levelIndex*3+i*5)%6)*3);
         if(levelIndex%10===3||levelIndex%10===6)p.moving=true;
         if(levelIndex%10===4||levelIndex%10===8)p.fragile=true;
       }

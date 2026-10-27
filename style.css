@@ -598,3 +598,9 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .achievement-row small,.secret-row small{font-size:9px;line-height:1.45;color:#8295ad}
 .secret-row span{font-size:7px;letter-spacing:.1em;color:var(--amber)}
 .achievement-heading{margin-top:18px;padding-top:12px;border-top:1px solid #27384a}
+
+/* v3.3.0: network state and touch-friendly status feedback */
+.top-status{transition:color .2s ease}
+.top-status.is-offline{color:var(--amber)}
+.top-status.is-offline .live-dot{background:var(--amber);box-shadow:0 0 10px #ffb45488}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

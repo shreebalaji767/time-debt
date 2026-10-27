@@ -57,7 +57,7 @@
               <div class="completion-actions"><button id="nextLevelBtn" class="primary-btn hidden">NEXT MISSION <span>→</span></button><button id="retryBtn" class="primary-btn">RETRY TIMELINE <span>↻</span></button></div>
             </div>
             <div id="toast" class="toast" aria-live="polite"></div>
-            <div class="touch-controls" id="touchControls" aria-label="Touch controls"><button data-control="left" aria-label="Move left">←</button><button data-control="right" aria-label="Move right">→</button><button data-control="jump" aria-label="Jump">↑</button><button data-control="dash" aria-label="Phase dash">⚡</button><button data-control="pulse" aria-label="Chrono pulse">✳</button><button data-control="borrow" aria-label="Borrow time">◉</button></div>
+            <div class="touch-controls" id="touchControls" aria-label="Touch controls"><button data-control="left" aria-label="Move left">←</button><button data-control="right" aria-label="Move right">→</button><button data-control="jump" aria-label="Jump">↑</button><button data-control="dash" aria-label="Phase dash">⚡</button><button data-control="pulse" aria-label="Chrono pulse">✳</button><button data-control="weapon" aria-label="Echo Bolt">✧</button><button data-control="borrow" aria-label="Borrow time">◉</button></div>
             <div class="canvas-bottom"><span>SYS // TD-01</span><span id="worldStatus">WORLD FLOW: 1.0×</span><span>LATENCY: <b id="latency">16</b> MS</span></div>
           </div>
           <div class="game-footer"><span><i class="key-dot"></i> PROCEDURAL WORLD</span><span><i class="key-dot amber"></i> TEMPORAL DEBT ACTIVE</span><span id="runStatus">AWAITING INPUT</span></div>
@@ -79,6 +79,7 @@
             <div class="control-row"><kbd class="accent-key">E</kbd><span class="or">OR</span><kbd class="accent-key">SHIFT</kbd><span>BORROW TIME</span></div>
             <div class="control-row"><kbd class="accent-key">X</kbd><span>PHASE DASH</span><small>COOLDOWN 1.15s</small></div>
             <div class="control-row"><kbd class="accent-key">C</kbd><span>CHRONO PULSE</span><small>UNLOCK IN SKILL TREE</small></div>
+            <div class="control-row"><kbd class="accent-key">V</kbd><span>ECHO BOLT</span><small>UNLOCK IN SKILL TREE</small></div>
             <div class="control-tip"><span>!</span><p>Hold the borrow key to freeze hazards. Every borrowed second adds debt. Release to repay at 2× speed.</p></div>
           </div>
           <div class="panel skills-panel">
@@ -87,6 +88,7 @@
             <div id="skillTree" class="skill-tree" aria-live="polite"></div>
             <p class="skill-footnote">Spend collected shards on permanent upgrades. Progress saves in this browser.</p>
           </div>
+          <div class="panel progression-panel"><div class="panel-heading"><span>SECRET CONTRACTS</span><span class="panel-code">HIDDEN</span></div><div id="secretMissionList" class="secret-list" aria-live="polite"></div><div class="panel-heading achievement-heading"><span>ACHIEVEMENTS</span><span class="panel-code">PERSISTENT</span></div><div id="achievementList" class="achievement-list" aria-live="polite"></div></div>
           <div class="panel stats-panel">
             <div class="panel-heading"><span>RUN TELEMETRY</span><span class="panel-code">LIVE</span></div>
             <div class="stat-line"><span>BEST TIME</span><strong id="bestValue">—</strong></div>

@@ -278,6 +278,30 @@
     if(!ui.skillTree)return;
     ui.skillTree.innerHTML=SKILLS.map(skill=>{const level=skillLevels[skill.id]||0;const cost=skill.cost*(level+1);const capped=level>=skill.max;return `<div class="skill-row"><div class="skill-copy"><strong>${skill.name}</strong><small>${skill.desc}</small><span>RANK ${level}/${skill.max}</span></div><button type="button" class="skill-buy" data-buy-skill="${skill.id}" ${capped||totalShards<cost?"disabled":""}>${capped?"MAXED":"UPGRADE · "+cost+" ◈"}</button></div>`;}).join("");
   }
+  // Campaign command hub: mission medals, deterministic daily challenge, and portable local saves.
+  const medalStoreKey="td-mission-medals";
+  let missionMedals={};try{missionMedals=JSON.parse(localStorage.getItem(medalStoreKey)||"{}")||{};}catch{missionMedals={};}
+  function dayStamp(){return new Date().toISOString().slice(0,10);}
+  function dailySpec(){const d=dayStamp();let n=0;for(const ch of d)n=(n*31+ch.charCodeAt(0))>>>0;return {date:d,mission:n%100,difficulty:["standard","paradox","nightmare"][n%3]};}
+  function renderProgressHub(){
+    const done=Math.max(storyProgress,Object.keys(missionRecords).filter(k=>Number(missionRecords[k])>0).length);
+    const pct=Math.round(Math.min(100,storyProgress)/100*100);
+    const p=$("campaignPercent"),s=$("campaignSummary"),m=$("campaignMeter"),count=$("missionMapCount"),map=$("missionMap");
+    if(p)p.textContent=pct+"%";if(s)s.textContent=storyProgress+" / 100 MISSIONS COMPLETE";if(m)m.style.width=pct+"%";if(count)count.textContent=storyProgress+" / 100";
+    if(map){map.innerHTML=LEVELS.map((level,i)=>{const completed=i<storyProgress,medal=missionMedals[String(i)]||"",isCurrent=i===levelIndex;return '<button type="button" class="mission-node '+(completed?"is-complete ":"")+(isCurrent?"is-current ":"")+'" data-mission="'+i+'" aria-label="Mission '+(i+1)+': '+level.name+(completed?", completed":"")+'"><span>'+String(i+1).padStart(2,"0")+'</span><small>'+(medal==="gold"?"★":medal==="silver"?"◆":medal==="bronze"?"●":completed?"✓":"")+'</small></button>';}).join("");}
+    const info=$("dailyChallengeInfo"),daily=dailySpec(),claimed=localStorage.getItem("td-daily-claimed")===daily.date;
+    if(info)info.textContent="TODAY · MISSION "+String(daily.mission+1).padStart(3,"0")+" · "+daily.difficulty.toUpperCase()+" · "+(claimed?"REWARD CLAIMED (+3 SHARDS)":"Win for +3 free shards");
+  }
+  const missionMap=$("missionMap");
+  if(missionMap)missionMap.addEventListener("click",e=>{const b=e.target.closest("[data-mission]");if(!b)return;chooseLevel(b.dataset.mission);const select=$("levelSelect");if(select)select.value=String(levelIndex);});
+  const dailyButton=$("dailyChallengeBtn");
+  if(dailyButton)dailyButton.addEventListener("click",()=>{const d=dailySpec();levelIndex=d.mission;difficultyKey=d.difficulty;difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-level",String(levelIndex));localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-daily-active",d.date);if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("DAILY CHALLENGE // "+d.difficulty.toUpperCase());});
+  const ngp=$("newGamePlusBtn");
+  if(ngp)ngp.addEventListener("click",()=>{if(!confirm("Start New Game+ at mission 1 on NIGHTMARE difficulty? Your existing records and shards will be kept."))return;levelIndex=0;difficultyKey="nightmare";difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-level","0");localStorage.setItem("td-difficulty",difficultyKey);localStorage.removeItem("td-daily-active");if(ui.levelSelect)ui.levelSelect.value="0";if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("NEW GAME+ // NIGHTMARE");});
+  const exportBtn=$("exportSaveBtn"),importBtn=$("importSaveBtn"),importFile=$("importSaveFile");
+  if(exportBtn)exportBtn.addEventListener("click",()=>{const data={format:"TIME-DEBT-SAVE",version:1,exportedAt:new Date().toISOString(),data:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith("td-"))data.data[k]=localStorage.getItem(k);}const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="time-debt-save-"+dayStamp()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);say("SAVE BACKUP EXPORTED");});
+  if(importBtn&&importFile)importBtn.addEventListener("click",()=>importFile.click());
+  if(importFile)importFile.addEventListener("change",async()=>{const file=importFile.files&&importFile.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=="TIME-DEBT-SAVE"||!data.data||typeof data.data!=="object"||Array.isArray(data.data))throw new Error("This is not a TIME DEBT save backup.");const allowed=Object.entries(data.data).filter(([k,v])=>k.startsWith("td-")&&typeof v==="string"&&v.length<100000);if(!allowed.length)throw new Error("No valid TIME DEBT save data found.");if(!confirm("Import "+allowed.length+" save entries? This replaces matching progress on this device."))return;for(const [k,v] of allowed)localStorage.setItem(k,v);alert("Save imported. The page will reload to apply your progress.");location.reload();}catch(err){alert("Could not import save: "+(err&&err.message?err.message:"Invalid file"));}finally{importFile.value="";}});
   function renderAchievements(){const node=$("achievementList");if(!node)return;node.innerHTML=ACHIEVEMENTS.map(a=>`<div class="achievement-row ${achievements[a.id]?"is-earned":""}"><strong>${achievements[a.id]?"✓":"◇"} ${a.name}</strong><small>${a.desc}</small></div>`).join("");const secrets=$("secretMissionList");if(secrets)secrets.innerHTML=SECRET_MISSIONS.map(s=>`<div class="secret-row ${secretClaims[s.id]?"is-earned":""}"><strong>${secretClaims[s.id]?"✓":"▣"} ${s.name}</strong><small>${s.desc}</small><span>${secretClaims[s.id]?"COMPLETED":levelIndex===s.mission?"CONTRACT ACTIVE":"HIDDEN CONTRACT"}</span></div>`).join("");}
   function earnAchievement(id){if(achievements[id])return;achievements[id]=true;localStorage.setItem("td-achievements",JSON.stringify(achievements));renderAchievements();const a=ACHIEVEMENTS.find(item=>item.id===id);if(a)say("ACHIEVEMENT UNLOCKED // "+a.name);}
   function claimSecret(id){if(secretClaims[id])return;secretClaims[id]=true;localStorage.setItem("td-secret-claims",JSON.stringify(secretClaims));totalShards+=5;localStorage.setItem("td-shards",String(totalShards));renderSkillTree();renderAchievements();say("SECRET CONTRACT COMPLETE // +5 SHARDS");tone(980,.2,"triangle",.04);}
@@ -320,7 +344,7 @@
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
     if(ui.difficulty)ui.difficulty.value=difficultyKey;if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);
-    renderStoryChat(levelIndex);renderAchievements();
+    renderStoryChat(levelIndex);renderAchievements();renderProgressHub();
     player={x:68,y:450,w:24,h:34,vx:0,vy:0,ground:false,face:1,trail:[],invuln:0};
     platforms=[
       {x:0,y:FLOOR,w:430,h:74},{x:492,y:FLOOR,w:210,h:74},{x:772,y:FLOOR,w:270,h:74},
@@ -445,6 +469,8 @@
     ui.run.textContent=win?"RUN COMPLETE":"RUN TERMINATED";
     runsPlayed+=1;localStorage.setItem("td-runs",String(runsPlayed));ui.runs.textContent=String(runsPlayed);
     if(win){
+      const daily=dailySpec();if(localStorage.getItem("td-daily-active")===daily.date&&levelIndex===daily.mission&&localStorage.getItem("td-daily-claimed")!==daily.date){totalShards+=3;localStorage.setItem("td-shards",String(totalShards));localStorage.setItem("td-daily-claimed",daily.date);say("DAILY CHALLENGE COMPLETE // +3 SHARDS");renderSkillTree();}
+      const medal=runHits===0&&elapsed<TOTAL*.65?"gold":elapsed<TOTAL*.82?"silver":"bronze";missionMedals[String(levelIndex)]=!missionMedals[String(levelIndex)]||({bronze:1,silver:2,gold:3}[medal]>({bronze:1,silver:2,gold:3}[missionMedals[String(levelIndex)]]||0))?medal:missionMedals[String(levelIndex)];localStorage.setItem(medalStoreKey,JSON.stringify(missionMedals));renderProgressHub();
       earnAchievement("first");if(totalShards>=25)earnAchievement("shards");if(boss?.defeated)earnAchievement("boss");if(runHits===0)earnAchievement("clean");if(levelIndex>=99)earnAchievement("campaign");
       if(levelIndex===4&&runHits===0)claimSecret(0);if(levelIndex===14&&runShards>=5)claimSecret(1);if(levelIndex===19&&boss?.defeated)claimSecret(2);
       const nextProgress=Math.max(storyProgress,levelIndex+1);storyProgress=nextProgress;localStorage.setItem("td-story-progress",String(nextProgress));const progressNode=$("storyProgressText");if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
@@ -456,7 +482,7 @@
       if(!best||elapsed<best){best=elapsed;localStorage.setItem("td-best",String(best));ui.best.textContent=best.toFixed(1)+"s";}
       unlocked=Math.max(unlocked,3);localStorage.setItem("td-gates",String(unlocked));ui.gates.innerHTML="3 <small>/ 3</small>";
       tone(660,.15,"triangle");setTimeout(()=>tone(880,.22,"triangle"),100);
-    }else{shake=10;tone(110,.4,"sawtooth",.045);}
+    }else{shake=10;tone(110,.4,"sawtooth",.045);}renderProgressHub();
   }
   function dash(){
     if(!running||paused||ended||dashCooldown>0)return;

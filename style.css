@@ -586,3 +586,15 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .skills-panel{min-width:0}.skill-wallet{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #223044;color:#8295ad;font-size:9px;letter-spacing:.08em}.skill-wallet strong{font-size:16px;color:var(--amber)}.skill-tree{display:grid;gap:0}.skill-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #1c2939}.skill-copy{display:grid;gap:4px;min-width:0}.skill-copy strong{font-size:10px;letter-spacing:.04em;color:#dce7f4}.skill-copy small{font-size:9px;line-height:1.4;color:#8295ad}.skill-copy span{font-size:8px;color:var(--cyan);letter-spacing:.1em}.skill-buy{flex:0 0 auto;max-width:112px;padding:7px 8px;border:1px solid #5de7f466;background:#0d1c2a;color:var(--cyan);font:inherit;font-size:9px;cursor:pointer}.skill-buy:not(:disabled):hover{background:#5de7f422;border-color:var(--cyan)}.skill-buy:disabled{opacity:.42;cursor:not-allowed}.skill-footnote{font-size:9px;line-height:1.5;color:#71849c;margin:10px 0 0}
 
 .touch-controls button[data-control="pulse"]{border-color:#c084fc99;color:#c084fc;border-radius:50%}
+
+
+/* Free unlockable Echo Bolt, secret contracts, and achievements */
+.touch-controls button[data-control="weapon"]{border-color:#b7a2ff99;color:#cbbcff;border-radius:50%}
+.achievement-list,.secret-list{display:grid;gap:0}
+.achievement-row,.secret-row{display:grid;gap:4px;padding:9px 0;border-bottom:1px solid #1c2939;opacity:.58}
+.achievement-row.is-earned,.secret-row.is-earned{opacity:1}
+.achievement-row strong,.secret-row strong{font-size:9px;letter-spacing:.06em;color:#dce7f4}
+.achievement-row.is-earned strong,.secret-row.is-earned strong{color:var(--cyan)}
+.achievement-row small,.secret-row small{font-size:9px;line-height:1.45;color:#8295ad}
+.secret-row span{font-size:7px;letter-spacing:.1em;color:var(--amber)}
+.achievement-heading{margin-top:18px;padding-top:12px;border-top:1px solid #27384a}

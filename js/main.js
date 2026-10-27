@@ -253,11 +253,12 @@
   try { missionRecords = JSON.parse(localStorage.getItem("td-mission-records") || "{}") || {}; } catch (_) { missionRecords = {}; }
   let unlocked = Number(localStorage.getItem("td-gates") || 0);
   let totalShards = Number(localStorage.getItem("td-shards") || 0);
-  const SKILLS=[{id:"reserve",name:"TIME RESERVE",desc:"+3 seconds per rank",max:3,cost:2},{id:"jump",name:"KINETIC DRIVE",desc:"+7% jump power per rank",max:3,cost:2},{id:"dash",name:"PHASE COIL",desc:"Dash cooldown −0.15s per rank",max:3,cost:2},{id:"armor",name:"DEBT ARMOR",desc:"Reduce hit penalties by 10% per rank",max:3,cost:3}];
+  const SKILLS=[{id:"reserve",name:"TIME RESERVE",desc:"+3 seconds per rank",max:3,cost:2},{id:"jump",name:"KINETIC DRIVE",desc:"+7% jump power per rank",max:3,cost:2},{id:"dash",name:"PHASE COIL",desc:"Dash cooldown −0.15s per rank",max:3,cost:2},{id:"armor",name:"DEBT ARMOR",desc:"Reduce hit penalties by 10% per rank",max:3,cost:3},{id:"pulse",name:"CHRONO PULSE",desc:"Unlock C pulse: freeze hazards + clear shots",max:1,cost:8}];
   let skillLevels={};try{skillLevels=JSON.parse(localStorage.getItem("td-skills")||"{}");}catch{skillLevels={};}
   SKILLS.forEach(skill=>{skillLevels[skill.id]=Math.max(0,Math.min(skill.max,Number(skillLevels[skill.id])||0));});
   let runsPlayed = Number(localStorage.getItem("td-runs") || 0);
   let runShards = 0;
+  let pulseTime=0,pulseCooldown=0;
   let checkpoint = {x:68,y:450,gate:0};
   ui.shards.textContent = "0 / 8";
   ui.runs.textContent = String(runsPlayed);
@@ -304,7 +305,7 @@
   function reset(){
     difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time+(skillLevels.reserve||0)*3);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
-    gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;
+    gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;pulseTime=0;pulseCooldown=0;
     const bossProfile=BOSSES[Math.floor(levelIndex/10)];const bossHp=7+Math.floor(levelIndex/10);boss=levelIndex%10===9?{...bossProfile,x:2760,y:410,w:72,h:88,hp:bossHp,maxHp:bossHp,attackClock:1.2,hitFlash:0,defeated:false,phase:0,specialClock:2.5,shielded:false,teleportClock:3.2,chapter:Math.floor(levelIndex/10)}:null;bossBolts=[];bossNotice=boss?2.5:0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
@@ -453,6 +454,12 @@
     player.trail.push({x:player.x+player.w/2,y:player.y+player.h/2,a:.28});
     say("PHASE DASH // "+(dashDirection>0?"FORWARD":"REVERSE"));tone(690,.07,"sawtooth",.025);
   }
+  function pulse(){
+    if(!running||paused||ended||!(skillLevels.pulse||0)||pulseCooldown>0)return;
+    pulseTime=1.25;pulseCooldown=10;player.invuln=Math.max(player.invuln,1.25);bossBolts=[];shake=7;
+    player.trail.push({x:player.x+player.w/2,y:player.y+player.h/2,a:.65});
+    say("CHRONO PULSE // HAZARDS FROZEN");tone(960,.18,"sine",.04);tone(420,.22,"triangle",.025);
+  }
   function jump(){
     if(!running||ended)return;
     jumpBuffer=.14;
@@ -480,7 +487,7 @@
     elapsed+=dt;
     jumpBuffer=Math.max(0,jumpBuffer-dt);
     if(elapsed>=TOTAL){elapsed=TOTAL;ui.time.textContent="0.0";ui.timeMeter.style.width="0%";finish(false,"Your reserve reached zero. Time always collects.");return;}
-    modeClock+=dt;dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);
+    modeClock+=dt;dashCooldown=Math.max(0,dashCooldown-dt);dashTime=Math.max(0,dashTime-dt);pulseCooldown=Math.max(0,pulseCooldown-dt);pulseTime=Math.max(0,pulseTime-dt);
     const isBorrow=keys.KeyE||keys.ShiftLeft||keys.ShiftRight;
     const wasBorrow=borrowedNow; borrowedNow=isBorrow && elapsed<TOTAL-1;
     chaosClock+=dt;
@@ -497,11 +504,11 @@
     if(bossNotice>0)bossNotice=Math.max(0,bossNotice-dt);
     if(boss&&!boss.defeated){
       boss.phase+=dt;boss.hitFlash=Math.max(0,boss.hitFlash-dt);boss.y=405+Math.sin(worldTime*1.7)*22;boss.specialClock-=dt;boss.teleportClock-=dt;if(boss.special==="shield"){boss.shielded=Math.sin(worldTime*2.2)>-.1;}else boss.shielded=false;if(boss.special==="blink"&&boss.teleportClock<=0){boss.x=player.x>2200?2500:2760;boss.teleportClock=3.2;say("TEMPORAL BLINK // TRACK THE CORE");}if(boss.special==="gravity"&&boss.specialClock<=0){player.vy=-Math.max(240,difficulty.jump*.62);boss.specialClock=4.5;say("GRAVITY FLIP // STAY AIRBORNE");tone(330,.18,"sine",.025);}if(boss.special==="erase"&&boss.specialClock<=0){bossBolts=bossBolts.filter(b=>b.x<boss.x-140||b.x>boss.x+140);boss.specialClock=4;say("MEMORY WIPE // PROJECTILES ERASED");}if(boss.special==="burn"&&boss.specialClock<=0){bossBolts.push({x:boss.x-80,y:FLOOR-20,vx:-180,vy:0,r:13,life:2.8,color:boss.color});bossBolts.push({x:boss.x+80,y:FLOOR-20,vx:180,vy:0,r:13,life:2.8,color:boss.color});boss.specialClock=3.8;say("ASH WAVE // JUMP THE FLOOR");}if(boss.special==="mirror"&&boss.specialClock<=0){bossBolts.push({x:player.x,y:player.y+player.h/2,vx:-260,vy:0,r:10,life:2.4,color:boss.color});boss.specialClock=3.4;say("MIRROR STRIKE // KEEP MOVING");}if(boss.special==="sweep"&&boss.specialClock<=0){for(let i=0;i<4;i++)bossBolts.push({x:boss.x-90+i*55,y:300+i%2*70,vx:-220,vy:0,r:9,life:3,color:boss.color});boss.specialClock=3.2;say("STORM SWEEP // FIND THE GAP");}
-      boss.attackClock-=dt*(borrowedNow?.15:1);
+      boss.attackClock-=pulseTime>0?0:dt*(borrowedNow?.15:1);
       if(boss.attackClock<=0){const enraged=boss.hp<=Math.ceil(boss.maxHp/2);boss.attackClock=Math.max(.48,(enraged?.78:1.48)-levelIndex*.003);const ox=boss.x+boss.w/2,oy=boss.y+boss.h/2,dx=player.x+player.w/2-ox,dy=player.y+player.h/2-oy,len=Math.max(1,Math.hypot(dx,dy)),speed=250+levelIndex*.6,shot=(vx,vy)=>bossBolts.push({x:ox,y:oy,vx,vy,r:8,life:4,color:boss.color});if(boss.pattern==="spread"){for(const a of [-.32,0,.32]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="rain"){for(let i=0;i<(enraged?4:2);i++)shot((i-(enraged?1.5:.5))*62,230+levelIndex*.4);}else if(boss.pattern==="double"){for(const a of [-.16,.16]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed,Math.sin(ang)*speed);}}else if(boss.pattern==="burst"){for(let i=0;i<(enraged?10:6);i++){const ang=i*Math.PI*2/(enraged?10:6)+boss.phase;shot(Math.cos(ang)*speed*.8,Math.sin(ang)*speed*.8);}}else if(boss.pattern==="sweep"){for(const a of [-.5,-.25,0,.25,.5]){const ang=Math.atan2(dy,dx)+a;shot(Math.cos(ang)*speed*.9,Math.sin(ang)*speed*.9);}}else shot(dx/len*speed,dy/len*speed);tone(240,.07,"square",.018);}
       if(dashTime>0&&player.x+player.w>boss.x&&player.x<boss.x+boss.w&&player.y+player.h>boss.y&&player.y<boss.y+boss.h){if(boss.shielded){dashTime=0;player.invuln=Math.max(player.invuln,.2);say("CORE SHIELDED // WAIT FOR THE OPENING");tone(180,.1,"square",.025);}else{boss.hp=Math.max(0,boss.hp-(boss.hp<=Math.ceil(boss.maxHp/2)?2:1));boss.hitFlash=.22;player.x+=dashDirection*48;dashTime=0;shake=8;tone(520,.1,"sawtooth",.03);say("PHASE STRIKE // BOSS CORE DAMAGED");if(boss.hp===0){boss.defeated=true;bossBolts=[];elapsed=Math.max(0,elapsed-4);say("COLLECTOR CORE SHATTERED // +4 SEC");tone(880,.25,"triangle",.04);}}}
     }
-    bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty*(1-(skillLevels.armor||0)*.1));shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
+    bossBolts=bossBolts.filter(b=>{if(boss?.defeated)return false;if(pulseTime>0)return true;b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(b.life<=0||b.x<cameraX-120||b.x>cameraX+W+160)return false;if(!borrowedNow&&player.invuln<=0&&player.x+player.w>b.x-b.r&&player.x<b.x+b.r&&player.y+player.h>b.y-b.r&&player.y<b.y+b.r){player.invuln=.8;player.vy=-280;player.vx=-player.face*120;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty*(1-(skillLevels.armor||0)*.1));shake=6;say("COLLECTOR PULSE // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(100,.16,"square",.03);return false;}return true;});
     ui.time.textContent=left.toFixed(1);ui.timeMeter.style.width=(left/TOTAL*100)+"%";
     ui.time.style.color=left<10?"var(--red)":"var(--cyan)";
     ui.debt.innerHTML=debt.toFixed(1)+'<span>s</span>';ui.debtMeter.style.width=(debt/12*100)+"%";
@@ -538,7 +545,7 @@
       }else{finish(false,"You fell outside the timeline. Reach a gate to establish a checkpoint.");return;}
     }
     for(const h of hazards){
-      if(!borrowedNow){
+      if(!borrowedNow&&pulseTime<=0){
         const chaosBoost=chaosEvent>0?1.75:1;
         const patrol=h.base+Math.sin(worldTime*h.speed*chaosBoost+h.phase)*h.range;
         h.x=patrol;
@@ -549,7 +556,7 @@
         const targetBias=Math.abs(distance)<alertRange?clamp(distance/alertRange,-1,1)*difficulty.hunt*55:0;
         h.x=patrol+targetBias;
       }
-      if(!borrowedNow&&player.invuln<=0&&player.x+player.w>h.x&&player.x<h.x+h.w&&player.y+player.h>h.y&&player.y<h.y+h.h){
+      if(!borrowedNow&&pulseTime<=0&&player.invuln<=0&&player.x+player.w>h.x&&player.x<h.x+h.w&&player.y+player.h>h.y&&player.y<h.y+h.h){
         player.invuln=.9;player.vy=-340;player.vx=-player.face*140;elapsed=Math.min(TOTAL,elapsed+difficulty.penalty);shake=8;say("PARADOX HIT // "+difficulty.penalty.toFixed(1)+" SEC LOST");tone(90,.2,"square",.035);
       }
     }
@@ -675,7 +682,7 @@
     if(["ArrowLeft","ArrowRight","ArrowUp","Space","ShiftLeft","ShiftRight"].includes(code))e.preventDefault();
     keys[code]=true;
     if((code==="Space"||code==="ArrowUp"||code==="KeyW")&&!e.repeat)jump();
-    if(code==="KeyX"&&!e.repeat)dash();
+    if(code==="KeyX"&&!e.repeat)dash();if(code==="KeyC"&&!e.repeat)pulse();
     if(code==="Enter"&&!running&&!ui.gameLayout.classList.contains("is-hidden"))start();
     if((code==="KeyP"||code==="Escape")&&!e.repeat&&running&&!ended){setPaused(!paused);return;}
     if(code==="KeyR"&&!e.repeat&&ended)start();
@@ -710,7 +717,7 @@
   ui.pauseBtn.addEventListener("click",()=>setPaused(!paused));ui.resumeBtn.addEventListener("click",()=>setPaused(false));
   document.querySelectorAll("[data-control]").forEach(button=>{
     const control=button.dataset.control;
-    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="dash")dash();else if(control==="borrow")keys.KeyE=true;};
+    const down=e=>{e.preventDefault();button.classList.add("is-active");if(control==="left")keys.ArrowLeft=true;else if(control==="right")keys.ArrowRight=true;else if(control==="jump")jump();else if(control==="dash")dash();else if(control==="pulse")pulse();else if(control==="borrow")keys.KeyE=true;};
     const up=e=>{e.preventDefault();button.classList.remove("is-active");if(control==="left")keys.ArrowLeft=false;else if(control==="right")keys.ArrowRight=false;else if(control==="borrow")keys.KeyE=false;};
     button.addEventListener("pointerdown",down);button.addEventListener("pointerup",up);button.addEventListener("pointercancel",up);button.addEventListener("lostpointercapture",up);
   });

@@ -245,6 +245,7 @@
   let difficulty=DIFFICULTIES[difficultyKey],jumpBuffer=0,coyoteTime=0,chaosClock=0,chaosEvent=0,chaosLabel="STABLE",levelHazardFactor=1;
   let dpr = 1, running = false, paused = false, ended = false, last = 0, elapsed = 0, debt = 0, paid = 0;
   let soundOn = localStorage.getItem("td-sound") !== "off", audio = null, toastTimer = 0, shake = 0, frameCount = 0, fpsFrames = 0, fpsTime = 0;
+  let screenShakeOn=localStorage.getItem("td-screen-shake")!=="off",largeTouch=localStorage.getItem("td-large-touch")==="on";
   let gameplayMode = 0, modeClock = 0, dashCooldown = 0, dashTime = 0, dashDirection = 1;
   let player, platforms, hazards, motes, gates, shards, keys = Object.create(null), cameraX = 0, worldTime = 0, borrowedNow = false;
   let boss = null, bossBolts = [], playerBolts = [], bossNotice = 0;
@@ -294,6 +295,12 @@
   }
   const missionMap=$("missionMap");
   if(missionMap)missionMap.addEventListener("click",e=>{const b=e.target.closest("[data-mission]");if(!b)return;chooseLevel(b.dataset.mission);const select=$("levelSelect");if(select)select.value=String(levelIndex);});
+  const shakeToggle=$("shakeToggleBtn"),touchSize=$("touchSizeBtn");
+  function renderAccessibility(){if(shakeToggle){shakeToggle.textContent="SCREEN SHAKE: "+(screenShakeOn?"ON":"OFF");shakeToggle.setAttribute("aria-pressed",String(screenShakeOn));}if(touchSize){touchSize.textContent="LARGE TOUCH: "+(largeTouch?"ON":"OFF");touchSize.setAttribute("aria-pressed",String(largeTouch));}document.body.classList.toggle("large-touch-controls",largeTouch);}
+  if(shakeToggle)shakeToggle.addEventListener("click",()=>{screenShakeOn=!screenShakeOn;localStorage.setItem("td-screen-shake",screenShakeOn?"on":"off");if(!screenShakeOn)shake=0;renderAccessibility();});
+  if(touchSize)touchSize.addEventListener("click",()=>{largeTouch=!largeTouch;localStorage.setItem("td-large-touch",largeTouch?"on":"off");renderAccessibility();});
+  const timeTrial=$("timeTrialBtn");if(timeTrial)timeTrial.addEventListener("click",()=>{difficultyKey="nightmare";difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-time-trial","on");localStorage.removeItem("td-daily-active");if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("TIME TRIAL // NIGHTMARE");});
+  renderAccessibility();
   const dailyButton=$("dailyChallengeBtn");
   if(dailyButton)dailyButton.addEventListener("click",()=>{const d=dailySpec();levelIndex=d.mission;difficultyKey=d.difficulty;difficulty=DIFFICULTIES[difficultyKey];localStorage.setItem("td-level",String(levelIndex));localStorage.setItem("td-difficulty",difficultyKey);localStorage.setItem("td-daily-active",d.date);if(ui.levelSelect)ui.levelSelect.value=String(levelIndex);if(ui.difficulty)ui.difficulty.value=difficultyKey;reset();showGame();say("DAILY CHALLENGE // "+d.difficulty.toUpperCase());});
   const ngp=$("newGamePlusBtn");
@@ -629,7 +636,7 @@
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
   function draw(){
     ctx.save();ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
-    if(shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
+    if(screenShakeOn&&shake>0)ctx.translate(rand(-shake,shake),rand(-shake,shake));
     ctx.fillStyle="#080d16";ctx.fillRect(0,0,W,H);
     const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#0b1524");bg.addColorStop(1,"#080d16");ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
     // Procedural star field and parallax grid.

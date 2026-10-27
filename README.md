@@ -1,3 +1,9 @@
+## Version 3.1.0 — Echo Bolt, Secret Contracts & Achievements
+- Added the free, shard-unlocked Echo Bolt weapon (press **V** or tap ✧); three ranks improve damage and cooldown against chapter bosses.
+- Added three optional secret contracts with persistent completion tracking and a five-shard reward each.
+- Added seven persistent achievements for campaign milestones, clean runs, shard collection, skill unlocks, and boss victories.
+- Added matching mobile controls and in-game progression panels. No ads, purchases, paid unlocks, libraries, or backend services.
+
 # TIME DEBT
 
 ## Version 2.3.0 — Temporal Fracture Branding

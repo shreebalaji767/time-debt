@@ -239,16 +239,16 @@
     ["The root channel opens without a sender.","The collector repeats a sentence you forgot.","Your missing tomorrow appears in the logs.","The engine begins counting backward.","A hundred mission records align into one memory.","The collector offers to restore the old timeline.","The cost is written in your own handwriting.","The exit is collapsing into absolute zero.","There is only one decision left.","Whatever happens next will be your own time."]
   ];
   function renderStoryChat(index){
-    const level=LEVELS[index],chapter=CHAPTERS[level.chapter],contact=STORY_CONTACTS[level.chapter],beat=level.beat,lore=WORLD_LORE[level.chapter];
+    const level=LEVELS[index],chapter=CHAPTERS[level.chapter%CHAPTERS.length],contact=STORY_CONTACTS[level.chapter%STORY_CONTACTS.length],beat=level.beat,lore=WORLD_LORE[level.chapter%WORLD_LORE.length];
     const chat=$("storyChat"),contactNode=$("chatContact"),avatar=document.querySelector(".chat-avatar");
     const chapterNode=$("storyChapter"),progressNode=$("storyProgressText");
     if(!chat)return;
     if(contactNode)contactNode.textContent=contact.name;
     if(avatar)avatar.textContent=contact.initial;
     if(chapterNode)chapterNode.textContent="CHAPTER "+String(level.chapter+1).padStart(2,"0")+" / "+chapter.name;
-    if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" / 100";
+    if(progressNode)progressNode.textContent="STORY PROGRESS "+storyProgress+" · ENDLESS";
     const clock=String(8+Math.floor(index/12)).padStart(2,"0")+":"+String((17+index*7)%60).padStart(2,"0");
-    const incoming=STORY_BEATS[level.chapter][beat];
+    const incoming=STORY_BEATS[level.chapter%STORY_BEATS.length][beat];
     const missionLine="MISSION "+String(index+1).padStart(3,"0")+" — "+level.name+". GAMEPLAY: "+level.modeName+" — "+level.modeBrief+" "+level.story;
     const messages=[
       {from:"SECTOR SYSTEM",side:"incoming",text:"LEVEL "+String(index+1).padStart(3,"0")+" // "+level.modeName+". "+level.modeBrief+" PHASE DASH: press X for a quick invulnerable burst; 1.15-second cooldown."},
@@ -385,7 +385,7 @@
     difficultyKey=DIFFICULTIES[difficultyKey]?difficultyKey:"standard";difficulty=DIFFICULTIES[difficultyKey];const level=LEVELS[levelIndex];TOTAL=Math.max(28,difficulty.time+level.time+(skillLevels.reserve||0)*3);levelHazardFactor=level.hazard*difficulty.hazard;chaosClock=0;chaosEvent=0;chaosLabel="STABLE";
     jumpBuffer=0;coyoteTime=0;
     gameplayMode=level.mode;modeClock=0;dashCooldown=0;dashTime=0;dashDirection=1;pulseTime=0;pulseCooldown=0;
-    const bossProfile=BOSSES[Math.floor(levelIndex/10)];const bossHp=7+Math.floor(levelIndex/10);boss=levelIndex%10===9?{...bossProfile,x:2760,y:410,w:72,h:88,hp:bossHp,maxHp:bossHp,attackClock:1.2,hitFlash:0,defeated:false,phase:0,specialClock:2.5,shielded:false,teleportClock:3.2,chapter:Math.floor(levelIndex/10)}:null;bossBolts=[];playerBolts=[];weaponCooldown=0;runHits=0;bossNotice=boss?2.5:0;
+    const bossProfile=BOSSES[Math.floor(levelIndex/10)%BOSSES.length];const bossHp=Math.min(30,7+Math.floor(levelIndex/10));boss=levelIndex%10===9?{...bossProfile,x:2760,y:410,w:72,h:88,hp:bossHp,maxHp:bossHp,attackClock:1.2,hitFlash:0,defeated:false,phase:0,specialClock:2.5,shielded:false,teleportClock:3.2,chapter:Math.floor(levelIndex/10)}:null;bossBolts=[];playerBolts=[];weaponCooldown=0;runHits=0;bossNotice=boss?2.5:0;
     elapsed=0; debt=0; paid=0; paused=false; worldTime=0; cameraX=0; shake=0; ended=false; borrowedNow=false; runShards=0;
     checkpoint={x:68,y:450,gate:0};
     ui.shards.innerHTML="0 <small>/ 8</small>";
@@ -435,7 +435,7 @@
     ui.paid.innerHTML='0.0<span>s</span>'; ui.world.textContent="WORLD FLOW: 1.0×";
     ui.run.textContent="AWAITING INPUT"; ui.level.textContent="LEVEL "+String(levelIndex+1).padStart(3,"0")+" / "+LEVELS[levelIndex].name+" · "+level.modeName;
     say("GAMEPLAY // "+level.modeName);
-    const storyChapter=$("storyChapter"),storyText=$("storyText"),storyProgressText=$("storyProgressText");if(storyChapter)storyChapter.textContent="CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0")+" / "+LEVELS[levelIndex].chapterName;if(storyText)storyText.textContent=LEVELS[levelIndex].story;if(storyProgressText)storyProgressText.textContent="STORY PROGRESS "+storyProgress+" / 100";
+    const storyChapter=$("storyChapter"),storyText=$("storyText"),storyProgressText=$("storyProgressText");if(storyChapter)storyChapter.textContent="CHAPTER "+String(LEVELS[levelIndex].chapter+1).padStart(2,"0")+" / "+LEVELS[levelIndex].chapterName;if(storyText)storyText.textContent=LEVELS[levelIndex].story;if(storyProgressText)storyProgressText.textContent="STORY PROGRESS "+storyProgress+" · ENDLESS";
     ui.start.classList.remove("hidden"); ui.end.classList.add("hidden"); ui.pause.classList.add("hidden"); ui.pauseBtn.innerHTML="Ⅱ <span>PAUSE</span>";
     ui.gates.innerHTML=Math.min(unlocked,3)+" <small>/ 3</small>";
     draw();

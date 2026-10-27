@@ -1,5 +1,10 @@
 # TIME DEBT
 
+## Version 3.7.0 — Focus-Safe Play
+- Automatically pauses an active run when the browser tab is hidden or the window is backgrounded, preventing unfair time loss.
+- Clears held movement/touch inputs on tab changes so controls cannot remain stuck after returning.
+- Keeps the game fully local, offline-capable, free, and ad-free.
+
 ## Version 3.6.0 — Neon Interface Refresh
 - Refreshed the visual system with luminous cyan/violet accents, deeper layered surfaces, refined panels, stronger typography, and cleaner spacing.
 - Improved the landing preview, mission controls, HUD, progression map, touch controls, and focus-visible states.

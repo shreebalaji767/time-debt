@@ -760,3 +760,16 @@ footer span{min-width:0;overflow-wrap:anywhere}
   .overlay{justify-content:flex-start}
 }
 @supports not (overflow:clip){html,body{overflow-x:hidden}}
+
+
+/* v4.1.1 — use the full available viewport instead of leaving side gutters */
+html,body{width:100%;min-width:0;max-width:100%;margin:0}
+body{min-height:100vh;min-height:100dvh}
+.app-shell{width:100%;max-width:none;margin:0;padding-inline:clamp(8px,1.4vw,22px)}
+main{width:100%;max-width:none;min-width:0}
+#landingIntro,.game-layout,.bottom-strip,footer{width:100%;max-width:none;min-width:0}
+.landing-preview,.preview-world,.canvas-wrap,#game{max-width:100%;min-width:0}
+.game-layout{grid-template-columns:minmax(0,1fr) minmax(250px,clamp(250px,22vw,340px))}
+.sidebar{min-width:0}
+@media(max-width:850px){.game-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.app-shell{padding-inline:8px}}

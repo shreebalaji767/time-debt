@@ -1,5 +1,10 @@
 # TIME DEBT
 
+## Version 3.8.0 — Free Practice Mode
+- Added an optional, persistent Practice Mode toggle that disables the countdown while leaving movement, hazards, bosses, and route challenges active.
+- Shows an infinity symbol for the time reserve during practice and restores normal timer behavior when switched off.
+- Practice Mode is free and local-only; no account, server, ads, or purchases.
+
 ## Version 3.7.0 — Focus-Safe Play
 - Automatically pauses an active run when the browser tab is hidden or the window is backgrounded, preventing unfair time loss.
 - Clears held movement/touch inputs on tab changes so controls cannot remain stuck after returning.
